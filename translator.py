@@ -261,43 +261,64 @@ def main():
     # 初始化session state
     if 'translated_text' not in st.session_state:
         st.session_state.translated_text = ""
-    if 'detected_language' not in st.session_state:
-        st.session_state.detected_language = ""
-    if 'last_copied' not in st.session_state:
-        st.session_state.last_copied = 0
+    if 'detected_lang' not in st.session_state:
+        st.session_state.detected_lang = ""
+    if 'polite_response' not in st.session_state:
+        st.session_state.polite_response = ""
     if 'copy_success' not in st.session_state:
         st.session_state.copy_success = False
+    if 'last_copied' not in st.session_state:
+        st.session_state.last_copied = 0
 
-    # 语言选择
-    target_language = st.selectbox(
-        "选择目标语言",
-        list(LANGUAGE_NAMES.values()),
-        index=list(LANGUAGE_NAMES.values()).index("中文")
-    )
+    # 三栏布局
+    col1, col2, col3 = st.columns([2, 1, 2])
 
-    # 输入文本
-    input_text = st.text_area("输入要翻译的文本", height=200)
+    with col1:
+        st.markdown("### 输入")
+        input_text = st.text_area("", height=200, placeholder="请输入要翻译的文本...", key="input_area")
+        # 检测语言
+        if input_text:
+            st.session_state.detected_lang = detect_language(input_text)
+        if st.session_state.detected_lang:
+            st.markdown(f'<p class="detected-lang">检测到的语言: {st.session_state.detected_lang}</p>', unsafe_allow_html=True)
 
-    # 翻译按钮
-    if st.button("翻译", key="translate_button"):
-        with st.spinner("正在翻译..."):
-            translated_text = translate_text(input_text, target_language)
-            st.session_state.translated_text = translated_text
-            st.session_state.detected_language = detect_language(input_text)
-            
-    # 显示翻译结果
-    if st.session_state.translated_text:
-        st.markdown("### 翻译结果")
+    with col2:
+        st.markdown("### 设置")
+        target_language = st.selectbox(
+            "目标语言",
+            list(LANGUAGE_NAMES.values()),
+            index=list(LANGUAGE_NAMES.values()).index("中文")
+        )
+        if st.button("翻译", key="translate_button", use_container_width=True):
+            with st.spinner("正在翻译..."):
+                translated_text = translate_text(input_text, target_language)
+                st.session_state.translated_text = translated_text
+        st.markdown("---")
+        if st.button("生成高情商回复", key="polite_button", use_container_width=True):
+            with st.spinner("正在生成高情商回复..."):
+                polite_response = generate_polite_response(st.session_state.translated_text or input_text)
+                st.session_state.polite_response = polite_response
+                # 自动复制
+                if copy_to_clipboard(polite_response):
+                    st.session_state.copy_success = True
+                    st.session_state.last_copied = time.time()
+                    st.success("高情商回复已复制到剪贴板！")
+                else:
+                    st.info("高情商回复已生成，但无法访问剪贴板。")
+
+    with col3:
+        st.markdown("### 结果")
         st.text_area("", st.session_state.translated_text, height=200, key="result_area")
-        
-        # 复制按钮
-        if st.button("复制结果", key="copy_button"):
+        if st.button("复制翻译结果", key="copy_button", use_container_width=True):
             if copy_to_clipboard(st.session_state.translated_text):
                 st.session_state.copy_success = True
                 st.session_state.last_copied = time.time()
-                st.success("已复制到剪贴板！")
+                st.success("翻译结果已复制到剪贴板！")
             else:
                 st.info("翻译已完成，但无法访问剪贴板。")
+        if st.session_state.polite_response:
+            st.markdown("### 高情商回复")
+            st.text_area("", st.session_state.polite_response, height=80, key="polite_area")
 
 if __name__ == "__main__":
     main() 
