@@ -79,7 +79,7 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 # 从 secrets 获取 API 密钥
-API_KEY = st.secrets["API_KEY"]
+API_KEY = "your-api-key-here"
 API_URL = "https://api.chatanywhere.tech/v1/chat/completions"
 
 # 请求限制控制
@@ -248,6 +248,15 @@ def generate_polite_response(text):
     except Exception as e:
         return f"生成回复失败: {str(e)}"
 
+def copy_to_clipboard(text):
+    """Copy text to clipboard with error handling"""
+    try:
+        pyperclip.copy(text)
+        return True
+    except Exception as e:
+        st.warning("无法访问剪贴板，但翻译已完成。")
+        return False
+
 def main():
     # 初始化session state
     if 'translated_text' not in st.session_state:
@@ -256,6 +265,12 @@ def main():
         st.session_state.input_text = ""
     if 'detected_lang' not in st.session_state:
         st.session_state.detected_lang = ""
+    if 'detected_language' not in st.session_state:
+        st.session_state.detected_language = ""
+    if 'last_copied' not in st.session_state:
+        st.session_state.last_copied = 0
+    if 'copy_success' not in st.session_state:
+        st.session_state.copy_success = False
 
     # 语言选择
     languages = {
