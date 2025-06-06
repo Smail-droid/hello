@@ -357,7 +357,7 @@ def main():
         """, unsafe_allow_html=True)
 
     # 输入框
-    input_text = st.text_area("", height=66, placeholder="请输入要翻译的文本...", key="input_area")
+    input_text = st.text_area("输入", height=66, placeholder="请输入要翻译的文本...", key="input_area", label_visibility="collapsed")
     # 检测语言
     if input_text:
         st.session_state.detected_lang = detect_language(input_text)
@@ -365,10 +365,10 @@ def main():
         st.markdown(f'<p class="detected-lang">检测到的语言: {st.session_state.detected_lang}</p>', unsafe_allow_html=True)
 
     # 结果框（始终显示）
-    st.text_area("", st.session_state.translated_text, height=66, key="result_area")
+    st.text_area("翻译结果", st.session_state.translated_text, height=66, key="result_area", label_visibility="collapsed")
 
     # 高情商回复框（始终显示）
-    st.text_area("", st.session_state.polite_response, height=30, key="polite_area")
+    st.text_area("高情商回复", st.session_state.polite_response, height=30, key="polite_area", label_visibility="collapsed")
 
     # 按钮区（始终在底部，自适应横排）
     st.markdown("""
