@@ -79,7 +79,7 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 # 从 secrets 获取 API 密钥
-API_KEY = "your-api-key-here"
+API_KEY = st.secrets["API_KEY"]
 API_URL = "https://api.chatanywhere.tech/v1/chat/completions"
 
 # 请求限制控制
