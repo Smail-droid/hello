@@ -261,10 +261,6 @@ def main():
     # 初始化session state
     if 'translated_text' not in st.session_state:
         st.session_state.translated_text = ""
-    if 'input_text' not in st.session_state:
-        st.session_state.input_text = ""
-    if 'detected_lang' not in st.session_state:
-        st.session_state.detected_lang = ""
     if 'detected_language' not in st.session_state:
         st.session_state.detected_language = ""
     if 'last_copied' not in st.session_state:
@@ -273,202 +269,35 @@ def main():
         st.session_state.copy_success = False
 
     # 语言选择
-    languages = {
-        # 常用语言优先
-        "中文": "Chinese",
-        "日语": "Japanese",
-        "韩语": "Korean",
-        "西班牙语": "Spanish",
-        "法语": "French",
-        "德语": "German",
-        "俄语": "Russian",
-        "意大利语": "Italian",
-        "葡萄牙语": "Portuguese",
-        "荷兰语": "Dutch",
-        "波兰语": "Polish",
-        "土耳其语": "Turkish",
-        "阿拉伯语": "Arabic",
-        "印地语": "Hindi",
-        "泰语": "Thai",
-        "越南语": "Vietnamese",
-        "印尼语": "Indonesian",
-        "马来语": "Malay",
-        "菲律宾语": "Filipino",
-        # 新增语言
-        "希腊语": "Greek",
-        "瑞典语": "Swedish",
-        "丹麦语": "Danish",
-        "芬兰语": "Finnish",
-        "挪威语": "Norwegian",
-        "捷克语": "Czech",
-        "匈牙利语": "Hungarian",
-        "罗马尼亚语": "Romanian",
-        "保加利亚语": "Bulgarian",
-        "乌克兰语": "Ukrainian",
-        "希伯来语": "Hebrew",
-        "孟加拉语": "Bengali",
-        "泰米尔语": "Tamil",
-        "乌尔都语": "Urdu",
-        "高棉语": "Khmer",
-        "缅甸语": "Burmese",
-        "老挝语": "Lao",
-        "尼泊尔语": "Nepali",
-        "斯里兰卡语": "Sinhala",
-        "蒙古语": "Mongolian",
-        "哈萨克语": "Kazakh",
-        "乌兹别克语": "Uzbek",
-        "吉尔吉斯语": "Kyrgyz",
-        "塔吉克语": "Tajik",
-        "土库曼语": "Turkmen",
-        "阿塞拜疆语": "Azerbaijani",
-        "格鲁吉亚语": "Georgian",
-        "亚美尼亚语": "Armenian",
-        "阿尔巴尼亚语": "Albanian",
-        "克罗地亚语": "Croatian",
-        "塞尔维亚语": "Serbian",
-        "斯洛文尼亚语": "Slovenian",
-        "斯洛伐克语": "Slovak",
-        "立陶宛语": "Lithuanian",
-        "拉脱维亚语": "Latvian",
-        "爱沙尼亚语": "Estonian",
-        "冰岛语": "Icelandic",
-        "马耳他语": "Maltese",
-        "威尔士语": "Welsh",
-        "爱尔兰语": "Irish",
-        "苏格兰语": "Scottish Gaelic",
-        "加泰罗尼亚语": "Catalan",
-        "加利西亚语": "Galician",
-        "巴斯克语": "Basque",
-        "卢森堡语": "Luxembourgish",
-        "列支敦士登语": "Liechtenstein German",
-        "摩纳哥语": "Monégasque",
-        "安道尔语": "Catalan",
-        "圣马力诺语": "Italian",
-        "梵蒂冈语": "Italian",
-        "摩洛哥语": "Arabic",
-        "突尼斯语": "Arabic",
-        "阿尔及利亚语": "Arabic",
-        "利比亚语": "Arabic",
-        "埃及语": "Arabic",
-        "苏丹语": "Arabic",
-        "埃塞俄比亚语": "Amharic",
-        "索马里语": "Somali",
-        "肯尼亚语": "Swahili",
-        "坦桑尼亚语": "Swahili",
-        "乌干达语": "Swahili",
-        "卢旺达语": "Kinyarwanda",
-        "布隆迪语": "Kirundi",
-        "刚果语": "Lingala",
-        "安哥拉语": "Portuguese",
-        "莫桑比克语": "Portuguese",
-        "纳米比亚语": "Afrikaans",
-        "博茨瓦纳语": "Tswana",
-        "津巴布韦语": "Shona",
-        "赞比亚语": "Bemba",
-        "马拉维语": "Chichewa",
-        "马达加斯加语": "Malagasy",
-        "毛里求斯语": "French",
-        "塞舌尔语": "French",
-        "科摩罗语": "Comorian",
-        "佛得角语": "Portuguese",
-        "圣多美语": "Portuguese",
-        "赤道几内亚语": "Spanish",
-        "加蓬语": "French",
-        "喀麦隆语": "French",
-        "乍得语": "French",
-        "中非语": "French",
-        "刚果语": "French",
-        "加纳语": "English",
-        "尼日利亚语": "English",
-        "塞内加尔语": "French",
-        "马里语": "French",
-        "布基纳法索语": "French",
-        "尼日尔语": "French",
-        "贝宁语": "French",
-        "多哥语": "French",
-        "科特迪瓦语": "French",
-        "利比里亚语": "English",
-        "塞拉利昂语": "English",
-        "几内亚语": "French",
-        "几内亚比绍语": "Portuguese",
-        "冈比亚语": "English",
-        "毛里塔尼亚语": "Arabic",
-        "西撒哈拉语": "Arabic"
-    }
+    target_language = st.selectbox(
+        "选择目标语言",
+        list(LANGUAGE_NAMES.values()),
+        index=list(LANGUAGE_NAMES.values()).index("中文")
+    )
 
-    # 创建三列布局
-    col1, col2, col3 = st.columns([2, 1, 2])
+    # 输入文本
+    input_text = st.text_area("输入要翻译的文本", height=200)
 
-    with col1:
-        st.markdown("### 输入")
-        input_text = st.text_area("", height=200, placeholder="请输入要翻译的文本...", label_visibility="collapsed", key="input_area")
+    # 翻译按钮
+    if st.button("翻译", key="translate_button"):
+        with st.spinner("正在翻译..."):
+            translated_text = translate_text(input_text, target_language)
+            st.session_state.translated_text = translated_text
+            st.session_state.detected_language = detect_language(input_text)
+            
+    # 显示翻译结果
+    if st.session_state.translated_text:
+        st.markdown("### 翻译结果")
+        st.text_area("", st.session_state.translated_text, height=200, key="result_area")
         
-        # 当输入文本改变时检测语言
-        if input_text != st.session_state.input_text:
-            st.session_state.input_text = input_text
-            if input_text:
-                st.session_state.detected_lang = detect_language(input_text)
-        
-        # 显示检测到的语言
-        if st.session_state.detected_lang:
-            st.markdown(f'<p class="detected-lang">检测到的语言: {st.session_state.detected_lang}</p>', unsafe_allow_html=True)
-
-    with col2:
-        st.markdown("### 设置")
-        target_language = st.selectbox(
-            "",
-            options=list(languages.keys()),
-            label_visibility="collapsed"
-        )
-        
-        translate_button = st.button("翻译", use_container_width=True)
-        
-        # 快速翻译按钮
-        st.markdown('<div class="quick-buttons">', unsafe_allow_html=True)
-        col_eng, col_pers = st.columns(2)
-        with col_eng:
-            if st.button("英语", use_container_width=True, key="quick_eng"):
-                if input_text:
-                    with st.spinner("翻译中..."):
-                        translated_text = translate_text(input_text, "English")
-                        st.session_state.translated_text = translated_text
-                        pyperclip.copy(translated_text)
-                        st.markdown('<p class="success-message">已自动复制到剪贴板</p>', unsafe_allow_html=True)
-        
-        with col_pers:
-            if st.button("波斯语", use_container_width=True, key="quick_pers"):
-                if input_text:
-                    with st.spinner("翻译中..."):
-                        translated_text = translate_text(input_text, "Persian")
-                        st.session_state.translated_text = translated_text
-                        pyperclip.copy(translated_text)
-                        st.markdown('<p class="success-message">已自动复制到剪贴板</p>', unsafe_allow_html=True)
-        st.markdown('</div>', unsafe_allow_html=True)
-
-    with col3:
-        st.markdown("### 结果")
-        if translate_button and input_text:
-            with st.spinner("翻译中..."):
-                # 默认翻译成中文
-                translated_text = translate_text(input_text, "Chinese")
-                st.session_state.translated_text = translated_text
-                # 自动复制到剪贴板
-                pyperclip.copy(translated_text)
-                st.markdown('<p class="success-message">已自动复制到剪贴板</p>', unsafe_allow_html=True)
-        
-        # 显示翻译结果
-        st.text_area("", st.session_state.translated_text, height=200, disabled=True, label_visibility="collapsed")
-        
-        # 添加高情商回复按钮
-        if st.session_state.translated_text:
-            if st.button("生成高情商回复", use_container_width=True):
-                with st.spinner("正在生成回复..."):
-                    polite_response = generate_polite_response(st.session_state.translated_text)
-                    st.markdown("### 高情商回复")
-                    st.markdown(polite_response)
-                    # 自动复制回复到剪贴板
-                    pyperclip.copy(polite_response)
-                    st.markdown('<p class="success-message">已自动复制回复到剪贴板</p>', unsafe_allow_html=True)
+        # 复制按钮
+        if st.button("复制结果", key="copy_button"):
+            if copy_to_clipboard(st.session_state.translated_text):
+                st.session_state.copy_success = True
+                st.session_state.last_copied = time.time()
+                st.success("已复制到剪贴板！")
+            else:
+                st.info("翻译已完成，但无法访问剪贴板。")
 
 if __name__ == "__main__":
     main() 
