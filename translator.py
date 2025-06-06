@@ -79,6 +79,42 @@ st.markdown("""
     .responsive-btns button {flex: 1 1 120px; min-width: 100px; margin-bottom: 4px;}
     @media (max-width: 600px) {.responsive-btns {flex-direction: column;}}
     .stTextArea [data-testid="stTextArea"] textarea:empty {background: transparent;}
+    .centered-loading {
+        position: fixed;
+        top: 20px;
+        left: 50%;
+        transform: translateX(-50%);
+        z-index: 9999;
+        font-size: 1.2rem;
+        color: #1976D2;
+        background: rgba(255,255,255,0.95);
+        padding: 8px 24px;
+        border-radius: 8px;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+        display: flex;
+        align-items: center;
+        font-weight: bold;
+    }
+    .lds-dual-ring {
+      display: inline-block;
+      width: 24px;
+      height: 24px;
+      margin-right: 10px;
+    }
+    .lds-dual-ring:after {
+      content: " ";
+      display: block;
+      width: 24px;
+      height: 24px;
+      border-radius: 50%;
+      border: 3px solid #1976D2;
+      border-color: #1976D2 transparent #1976D2 transparent;
+      animation: lds-dual-ring 1.2s linear infinite;
+    }
+    @keyframes lds-dual-ring {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
 </style>
 """, unsafe_allow_html=True)
 
@@ -269,27 +305,70 @@ def main():
         st.session_state.detected_lang = ""
     if 'polite_response' not in st.session_state:
         st.session_state.polite_response = ""
+    if 'loading_message' not in st.session_state:
+        st.session_state.loading_message = ""
+
+    # 顶部加载提示动画
+    st.markdown("""
+    <style>
+    .centered-loading {
+        position: fixed;
+        top: 20px;
+        left: 50%;
+        transform: translateX(-50%);
+        z-index: 9999;
+        font-size: 1.2rem;
+        color: #1976D2;
+        background: rgba(255,255,255,0.95);
+        padding: 8px 24px;
+        border-radius: 8px;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+        display: flex;
+        align-items: center;
+        font-weight: bold;
+    }
+    .lds-dual-ring {
+      display: inline-block;
+      width: 24px;
+      height: 24px;
+      margin-right: 10px;
+    }
+    .lds-dual-ring:after {
+      content: " ";
+      display: block;
+      width: 24px;
+      height: 24px;
+      border-radius: 50%;
+      border: 3px solid #1976D2;
+      border-color: #1976D2 transparent #1976D2 transparent;
+      animation: lds-dual-ring 1.2s linear infinite;
+    }
+    @keyframes lds-dual-ring {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+    </style>
+    """, unsafe_allow_html=True)
+    if st.session_state.loading_message:
+        st.markdown(f"""
+        <div class='centered-loading'>
+            <span class='lds-dual-ring'></span>{st.session_state.loading_message}
+        </div>
+        """, unsafe_allow_html=True)
 
     # 输入框
-    input_text = st.text_area("", height=200, placeholder="请输入要翻译的文本...", key="input_area")
+    input_text = st.text_area("", height=66, placeholder="请输入要翻译的文本...", key="input_area")
     # 检测语言
     if input_text:
         st.session_state.detected_lang = detect_language(input_text)
     if st.session_state.detected_lang:
         st.markdown(f'<p class="detected-lang">检测到的语言: {st.session_state.detected_lang}</p>', unsafe_allow_html=True)
 
-    # 结果框（有内容时显示）
-    if st.session_state.translated_text:
-        st.markdown("""
-        <style>
-        .stTextArea [data-testid=\"stTextArea\"] textarea:empty {background: transparent;}
-        </style>
-        """, unsafe_allow_html=True)
-        st.text_area("", st.session_state.translated_text, height=200, key="result_area")
+    # 结果框（始终显示）
+    st.text_area("", st.session_state.translated_text, height=66, key="result_area")
 
-    # 高情商回复（有内容时显示）
-    if st.session_state.polite_response:
-        st.text_area("", st.session_state.polite_response, height=80, key="polite_area")
+    # 高情商回复框（始终显示）
+    st.text_area("", st.session_state.polite_response, height=30, key="polite_area")
 
     # 按钮区（始终在底部，自适应横排）
     st.markdown("""
@@ -313,23 +392,31 @@ def main():
 
     # 按钮功能
     if btn_translate:
+        st.session_state.loading_message = "翻译中..."
         with st.spinner("正在翻译..."):
             translated_text = translate_text(input_text, st.session_state.get('target_language', '中文'))
             st.session_state.translated_text = translated_text
+        st.session_state.loading_message = ""
     if btn_eng:
+        st.session_state.loading_message = "翻译中..."
         if input_text:
             with st.spinner("翻译中..."):
                 translated_text = translate_text(input_text, "英语")
                 st.session_state.translated_text = translated_text
+        st.session_state.loading_message = ""
     if btn_pers:
+        st.session_state.loading_message = "翻译中..."
         if input_text:
             with st.spinner("翻译中..."):
                 translated_text = translate_text(input_text, "波斯语")
                 st.session_state.translated_text = translated_text
+        st.session_state.loading_message = ""
     if btn_polite:
+        st.session_state.loading_message = "正在生成高情商回复..."
         with st.spinner("正在生成高情商回复..."):
             polite_response = generate_polite_response(st.session_state.translated_text or input_text)
             st.session_state.polite_response = polite_response
+        st.session_state.loading_message = ""
 
 if __name__ == "__main__":
     main() 
