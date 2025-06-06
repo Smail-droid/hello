@@ -293,6 +293,22 @@ def main():
             with st.spinner("正在翻译..."):
                 translated_text = translate_text(input_text, target_language)
                 st.session_state.translated_text = translated_text
+        # 快速翻译按钮
+        st.markdown('<div class="quick-buttons">', unsafe_allow_html=True)
+        col_eng, col_pers = st.columns(2)
+        with col_eng:
+            if st.button("英语", use_container_width=True, key="quick_eng"):
+                if input_text:
+                    with st.spinner("翻译中..."):
+                        translated_text = translate_text(input_text, "英语")
+                        st.session_state.translated_text = translated_text
+        with col_pers:
+            if st.button("波斯语", use_container_width=True, key="quick_pers"):
+                if input_text:
+                    with st.spinner("翻译中..."):
+                        translated_text = translate_text(input_text, "波斯语")
+                        st.session_state.translated_text = translated_text
+        st.markdown('</div>', unsafe_allow_html=True)
         st.markdown("---")
         if st.button("生成高情商回复", key="polite_button", use_container_width=True):
             with st.spinner("正在生成高情商回复..."):
@@ -316,6 +332,10 @@ def main():
                 st.success("翻译结果已复制到剪贴板！")
             else:
                 st.info("翻译已完成，但无法访问剪贴板。")
+                # 提供手动复制区域
+                if st.session_state.translated_text:
+                    st.text_area("手动复制翻译结果：", st.session_state.translated_text, height=100, key="manual_copy_area")
+                    st.markdown("<span style='color:#888'>请手动全选并复制上方内容</span>", unsafe_allow_html=True)
         if st.session_state.polite_response:
             st.markdown("### 高情商回复")
             st.text_area("", st.session_state.polite_response, height=80, key="polite_area")
