@@ -75,6 +75,10 @@ st.markdown("""
     .quick-buttons {
         margin-top: 0.5rem;
     }
+    .responsive-btns {display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; margin-bottom: 16px;}
+    .responsive-btns button {flex: 1 1 120px; min-width: 100px; margin-bottom: 4px;}
+    @media (max-width: 600px) {.responsive-btns {flex-direction: column;}}
+    .stTextArea [data-testid="stTextArea"] textarea:empty {background: transparent;}
 </style>
 """, unsafe_allow_html=True)
 
@@ -265,73 +269,67 @@ def main():
         st.session_state.detected_lang = ""
     if 'polite_response' not in st.session_state:
         st.session_state.polite_response = ""
-    if 'copy_success' not in st.session_state:
-        st.session_state.copy_success = False
-    if 'last_copied' not in st.session_state:
-        st.session_state.last_copied = 0
 
-    # 三栏布局
-    col1, col2, col3 = st.columns([2, 1, 2])
+    # 输入框
+    input_text = st.text_area("", height=200, placeholder="请输入要翻译的文本...", key="input_area")
+    # 检测语言
+    if input_text:
+        st.session_state.detected_lang = detect_language(input_text)
+    if st.session_state.detected_lang:
+        st.markdown(f'<p class="detected-lang">检测到的语言: {st.session_state.detected_lang}</p>', unsafe_allow_html=True)
 
-    with col1:
-        st.markdown("### 输入")
-        input_text = st.text_area("", height=200, placeholder="请输入要翻译的文本...", key="input_area")
-        # 检测语言
-        if input_text:
-            st.session_state.detected_lang = detect_language(input_text)
-        if st.session_state.detected_lang:
-            st.markdown(f'<p class="detected-lang">检测到的语言: {st.session_state.detected_lang}</p>', unsafe_allow_html=True)
-
-    with col2:
-        st.markdown("### 设置")
-        target_language = st.selectbox(
-            "目标语言",
-            list(LANGUAGE_NAMES.values()),
-            index=list(LANGUAGE_NAMES.values()).index("中文")
-        )
-        if st.button("翻译", key="translate_button", use_container_width=True):
-            with st.spinner("正在翻译..."):
-                translated_text = translate_text(input_text, target_language)
-                st.session_state.translated_text = translated_text
-        # 快速翻译按钮
-        st.markdown('<div class="quick-buttons">', unsafe_allow_html=True)
-        col_eng, col_pers = st.columns(2)
-        with col_eng:
-            if st.button("英语", use_container_width=True, key="quick_eng"):
-                if input_text:
-                    with st.spinner("翻译中..."):
-                        translated_text = translate_text(input_text, "英语")
-                        st.session_state.translated_text = translated_text
-        with col_pers:
-            if st.button("波斯语", use_container_width=True, key="quick_pers"):
-                if input_text:
-                    with st.spinner("翻译中..."):
-                        translated_text = translate_text(input_text, "波斯语")
-                        st.session_state.translated_text = translated_text
-        st.markdown('</div>', unsafe_allow_html=True)
-        st.markdown("---")
-        if st.button("生成高情商回复", key="polite_button", use_container_width=True):
-            with st.spinner("正在生成高情商回复..."):
-                polite_response = generate_polite_response(st.session_state.translated_text or input_text)
-                st.session_state.polite_response = polite_response
-                # 自动复制
-                if copy_to_clipboard(polite_response):
-                    st.session_state.copy_success = True
-                    st.session_state.last_copied = time.time()
-                    st.success("高情商回复已复制到剪贴板！")
-                else:
-                    st.info("高情商回复已生成，但无法访问剪贴板。")
-
-    with col3:
-        st.markdown("### 结果")
+    # 结果框（有内容时显示）
+    if st.session_state.translated_text:
+        st.markdown("""
+        <style>
+        .stTextArea [data-testid=\"stTextArea\"] textarea:empty {background: transparent;}
+        </style>
+        """, unsafe_allow_html=True)
         st.text_area("", st.session_state.translated_text, height=200, key="result_area")
-        # 只保留手动复制区域，不显示任何剪贴板相关提示
-        if st.session_state.translated_text:
-            st.text_area("手动复制翻译结果：", st.session_state.translated_text, height=100, key="manual_copy_area")
-            st.markdown("<span style='color:#888'>请手动全选并复制上方内容</span>", unsafe_allow_html=True)
-        if st.session_state.polite_response:
-            st.markdown("### 高情商回复")
-            st.text_area("", st.session_state.polite_response, height=80, key="polite_area")
+
+    # 高情商回复（有内容时显示）
+    if st.session_state.polite_response:
+        st.text_area("", st.session_state.polite_response, height=80, key="polite_area")
+
+    # 按钮区（始终在底部，自适应横排）
+    st.markdown("""
+    <style>
+    .responsive-btns {display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; margin-bottom: 16px;}
+    .responsive-btns button {flex: 1 1 120px; min-width: 100px; margin-bottom: 4px;}
+    @media (max-width: 600px) {.responsive-btns {flex-direction: column;}}
+    </style>
+    <div class='responsive-btns'>
+    """, unsafe_allow_html=True)
+    col_btn1, col_btn2, col_btn3, col_btn4 = st.columns(4)
+    with col_btn1:
+        btn_translate = st.button("翻译", key="translate_button")
+    with col_btn2:
+        btn_eng = st.button("英语", key="quick_eng")
+    with col_btn3:
+        btn_pers = st.button("波斯语", key="quick_pers")
+    with col_btn4:
+        btn_polite = st.button("高情商回复", key="polite_button")
+    st.markdown("</div>", unsafe_allow_html=True)
+
+    # 按钮功能
+    if btn_translate:
+        with st.spinner("正在翻译..."):
+            translated_text = translate_text(input_text, st.session_state.get('target_language', '中文'))
+            st.session_state.translated_text = translated_text
+    if btn_eng:
+        if input_text:
+            with st.spinner("翻译中..."):
+                translated_text = translate_text(input_text, "英语")
+                st.session_state.translated_text = translated_text
+    if btn_pers:
+        if input_text:
+            with st.spinner("翻译中..."):
+                translated_text = translate_text(input_text, "波斯语")
+                st.session_state.translated_text = translated_text
+    if btn_polite:
+        with st.spinner("正在生成高情商回复..."):
+            polite_response = generate_polite_response(st.session_state.translated_text or input_text)
+            st.session_state.polite_response = polite_response
 
 if __name__ == "__main__":
     main() 
