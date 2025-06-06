@@ -325,17 +325,10 @@ def main():
     with col3:
         st.markdown("### 结果")
         st.text_area("", st.session_state.translated_text, height=200, key="result_area")
-        if st.button("复制翻译结果", key="copy_button", use_container_width=True):
-            if copy_to_clipboard(st.session_state.translated_text):
-                st.session_state.copy_success = True
-                st.session_state.last_copied = time.time()
-                st.success("翻译结果已复制到剪贴板！")
-            else:
-                st.info("翻译已完成，但无法访问剪贴板。")
-                # 提供手动复制区域
-                if st.session_state.translated_text:
-                    st.text_area("手动复制翻译结果：", st.session_state.translated_text, height=100, key="manual_copy_area")
-                    st.markdown("<span style='color:#888'>请手动全选并复制上方内容</span>", unsafe_allow_html=True)
+        # 只保留手动复制区域，不显示任何剪贴板相关提示
+        if st.session_state.translated_text:
+            st.text_area("手动复制翻译结果：", st.session_state.translated_text, height=100, key="manual_copy_area")
+            st.markdown("<span style='color:#888'>请手动全选并复制上方内容</span>", unsafe_allow_html=True)
         if st.session_state.polite_response:
             st.markdown("### 高情商回复")
             st.text_area("", st.session_state.polite_response, height=80, key="polite_area")
