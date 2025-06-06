@@ -19,7 +19,7 @@ st.markdown("""
 <style>
     .main {
         padding: 1rem;
-        max-width: 1000px;
+        max-width: 1600px;
         margin: 0 auto;
     }
     .stButton>button {
@@ -42,6 +42,7 @@ st.markdown("""
         border-radius: 5px;
         border: 1px solid #ddd;
         cursor: text;
+        min-height: 200px;
     }
     .stTextArea>div>div>textarea:disabled {
         background-color: #f8f9fa;
