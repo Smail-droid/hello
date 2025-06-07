@@ -115,6 +115,14 @@ st.markdown("""
       0% { transform: rotate(0deg); }
       100% { transform: rotate(360deg); }
     }
+    .chat-bubble-user {background:#e6f0fa; color:#222; border-radius:12px 12px 4px 12px; padding:10px 16px; margin:8px 0; max-width:70%; align-self:flex-end;}
+    .chat-bubble-result {background:#f5f5f5; color:#222; border-radius:12px 12px 12px 4px; padding:10px 16px; margin:8px 0; max-width:70%; align-self:flex-start;}
+    .chat-bubble-pol {background:#fffbe6; color:#222; border-radius:12px 12px 12px 4px; padding:10px 16px; margin:8px 0; max-width:70%; align-self:flex-start; font-style:italic;}
+    .chat-history {display:flex; flex-direction:column; gap:0; min-height:60vh; margin-bottom:16px;}
+    .chat-bottom-bar {position:fixed; bottom:0; left:0; width:100vw; background:#fff; z-index:100; box-shadow:0 -2px 8px rgba(0,0,0,0.04); padding:12px 0 8px 0;}
+    .lang-btn {border:none; background:transparent; font-size:1.5rem; margin:0 4px; cursor:pointer;}
+    .send-btn {background:#1976D2; color:#fff; border:none; border-radius:6px; padding:8px 24px; font-size:1.1rem; margin-left:8px; cursor:pointer;}
+    @media (max-width:600px) {.chat-bubble-user,.chat-bubble-result,.chat-bubble-pol{max-width:95%;}}
 </style>
 """, unsafe_allow_html=True)
 
@@ -298,125 +306,64 @@ def copy_to_clipboard(text):
         return False
 
 def main():
-    # 初始化控件 session_state
+    # 初始化聊天历史
+    if 'chat_history' not in st.session_state:
+        st.session_state['chat_history'] = []  # 每条为dict: {'role': 'user'/'result'/'polite', 'text': str, 'lang': str}
+    if 'target_language' not in st.session_state:
+        st.session_state['target_language'] = '中文'
     if 'input_area' not in st.session_state:
-        st.session_state['input_area'] = ""
-    if 'result_area' not in st.session_state:
-        st.session_state['result_area'] = ""
-    if 'polite_area' not in st.session_state:
-        st.session_state['polite_area'] = ""
+        st.session_state['input_area'] = ''
+    if 'loading_message' not in st.session_state:
+        st.session_state['loading_message'] = ''
 
-    # 顶部加载提示动画
-    loading_message = st.session_state.get('loading_message', '')
-    st.markdown("""
-    <style>
-    .centered-loading {
-        position: fixed;
-        top: 20px;
-        left: 50%;
-        transform: translateX(-50%);
-        z-index: 9999;
-        font-size: 1.2rem;
-        color: #1976D2;
-        background: rgba(255,255,255,0.95);
-        padding: 8px 24px;
-        border-radius: 8px;
-        box-shadow: 0 2px 8px rgba(0,0,0,0.08);
-        display: flex;
-        align-items: center;
-        font-weight: bold;
-    }
-    .lds-dual-ring {
-      display: inline-block;
-      width: 24px;
-      height: 24px;
-      margin-right: 10px;
-    }
-    .lds-dual-ring:after {
-      content: " ";
-      display: block;
-      width: 24px;
-      height: 24px;
-      border-radius: 50%;
-      border: 3px solid #1976D2;
-      border-color: #1976D2 transparent #1976D2 transparent;
-      animation: lds-dual-ring 1.2s linear infinite;
-    }
-    @keyframes lds-dual-ring {
-      0% { transform: rotate(0deg); }
-      100% { transform: rotate(360deg); }
-    }
-    </style>
-    """, unsafe_allow_html=True)
-    if loading_message:
-        st.markdown(f"""
-        <div class='centered-loading'>
-            <span class='lds-dual-ring'></span>{loading_message}
-        </div>
-        """, unsafe_allow_html=True)
+    # 聊天历史区
+    st.markdown('<div class="chat-history">', unsafe_allow_html=True)
+    for msg in st.session_state['chat_history']:
+        if msg['role'] == 'user':
+            st.markdown(f'<div class="chat-bubble-user">🧑‍💻 {msg["text"]}</div>', unsafe_allow_html=True)
+        elif msg['role'] == 'result':
+            st.markdown(f'<div class="chat-bubble-result">🌐 {msg["text"]}</div>', unsafe_allow_html=True)
+        elif msg['role'] == 'polite':
+            st.markdown(f'<div class="chat-bubble-pol">🤝 {msg["text"]}</div>', unsafe_allow_html=True)
+    st.markdown('</div>', unsafe_allow_html=True)
 
-    # 输入框
-    st.text_area("输入", height=66, placeholder="请输入要翻译的文本...", key="input_area", label_visibility="collapsed")
-    input_text = st.session_state["input_area"]
-    # 检测语言
-    if input_text:
-        st.session_state.detected_lang = detect_language(input_text)
-    if st.session_state.detected_lang:
-        st.markdown(f'<p class="detected-lang">检测到的语言: {st.session_state.detected_lang}</p>', unsafe_allow_html=True)
+    # 底部输入区
+    st.markdown('<div class="chat-bottom-bar">', unsafe_allow_html=True)
+    col1, col2, col3, col4 = st.columns([1,1,8,2])
+    with col1:
+        if st.button('🇬🇧', key='lang_en', help='翻译为英语', use_container_width=True):
+            st.session_state['target_language'] = '英语'
+    with col2:
+        if st.button('🇮🇷', key='lang_fa', help='翻译为波斯语', use_container_width=True):
+            st.session_state['target_language'] = '波斯语'
+    with col3:
+        user_input = st.text_input("", value=st.session_state['input_area'], placeholder="请输入内容并回车或点击发送...", key='input_area_text', label_visibility='collapsed')
+    with col4:
+        send_clicked = st.button('发送', key='send_btn', use_container_width=True)
+    st.markdown('</div>', unsafe_allow_html=True)
 
-    # 结果框（始终显示）
-    st.text_area("翻译结果", height=66, key="result_area", label_visibility="collapsed")
+    # 发送逻辑
+    if send_clicked or (user_input and user_input != '' and st.session_state.get('last_input','') != user_input):
+        st.session_state['last_input'] = user_input
+        # 追加用户消息
+        st.session_state['chat_history'].append({'role':'user','text':user_input,'lang':'auto'})
+        st.session_state['input_area'] = ''
+        st.session_state['loading_message'] = '翻译中...'
+        st.experimental_rerun()
 
-    # 高情商回复框（始终显示）
-    st.text_area("高情商回复", height=30, key="polite_area", label_visibility="collapsed")
-
-    # 按钮区（始终在底部，自适应横排）
-    st.markdown("""
-    <style>
-    .responsive-btns {display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; margin-bottom: 16px;}
-    .responsive-btns button {flex: 1 1 120px; min-width: 100px; margin-bottom: 4px;}
-    @media (max-width: 600px) {.responsive-btns {flex-direction: column;}}
-    </style>
-    <div class='responsive-btns'>
-    """, unsafe_allow_html=True)
-    col_btn1, col_btn2, col_btn3, col_btn4 = st.columns(4)
-    with col_btn1:
-        btn_translate = st.button("翻译", key="translate_button")
-    with col_btn2:
-        btn_eng = st.button("英语", key="quick_eng")
-    with col_btn3:
-        btn_pers = st.button("波斯语", key="quick_pers")
-    with col_btn4:
-        btn_polite = st.button("高情商回复", key="polite_button")
-    st.markdown("</div>", unsafe_allow_html=True)
-
-    # 按钮功能
-    if btn_translate:
-        st.session_state.loading_message = "翻译中..."
-        with st.spinner("正在翻译..."):
-            translated_text = translate_text(input_text, st.session_state.get('target_language', '中文'))
-            st.session_state.translated_text = translated_text
-        st.session_state.loading_message = ""
-    if btn_eng:
-        st.session_state.loading_message = "翻译中..."
-        if input_text:
-            with st.spinner("翻译中..."):
-                translated_text = translate_text(input_text, "英语")
-                st.session_state.translated_text = translated_text
-        st.session_state.loading_message = ""
-    if btn_pers:
-        st.session_state.loading_message = "翻译中..."
-        if input_text:
-            with st.spinner("翻译中..."):
-                translated_text = translate_text(input_text, "波斯语")
-                st.session_state.translated_text = translated_text
-        st.session_state.loading_message = ""
-    if btn_polite:
-        st.session_state.loading_message = "正在生成高情商回复..."
-        with st.spinner("正在生成高情商回复..."):
-            polite_response = generate_polite_response(st.session_state.translated_text or input_text)
-            st.session_state.polite_response = polite_response
-        st.session_state.loading_message = ""
+    # 自动处理最新一条未翻译的用户消息
+    if st.session_state['chat_history'] and (not st.session_state['chat_history'][-1].get('handled')) and st.session_state['chat_history'][-1]['role']=='user':
+        user_msg = st.session_state['chat_history'][-1]['text']
+        target_lang = st.session_state['target_language']
+        st.session_state['loading_message'] = '翻译中...'
+        result = translate_text(user_msg, target_lang)
+        st.session_state['chat_history'].append({'role':'result','text':result,'lang':target_lang})
+        st.session_state['loading_message'] = '生成高情商回复...'
+        polite = generate_polite_response(result)
+        st.session_state['chat_history'].append({'role':'polite','text':polite,'lang':target_lang})
+        st.session_state['chat_history'][-3]['handled'] = True
+        st.session_state['loading_message'] = ''
+        st.experimental_rerun()
 
 if __name__ == "__main__":
     main() 
