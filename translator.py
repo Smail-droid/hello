@@ -349,6 +349,12 @@ def copy_to_clipboard(text):
         return False
 
 def main():
+    # --- 输入框清空机制 ---
+    if st.session_state.get('clear_input', False):
+        st.session_state['input_area'] = ''
+        st.session_state['clear_input'] = False
+        st.rerun()
+
     # 初始化 session_state
     if 'chat_history' not in st.session_state:
         st.session_state['chat_history'] = []
@@ -364,8 +370,6 @@ def main():
         st.session_state['pending_send'] = False
     if 'auto_translate' not in st.session_state:
         st.session_state['auto_translate'] = False
-    if 'clear_input' not in st.session_state:
-        st.session_state['clear_input'] = False
 
     # 语言按钮
     languages = {
@@ -436,12 +440,6 @@ def main():
                 st.session_state['clear_input'] = True  # 标记清空
             st.rerun()
 
-    # 如果clear_input为True，先清空input_area再rerun
-    if st.session_state.get('clear_input', False):
-        st.session_state['input_area'] = ''
-        st.session_state['clear_input'] = False
-        st.rerun()
-
     # 结果区：输入框下方只显示最新一组，历史组依次往下
     history = st.session_state['chat_history']
     groups = []
@@ -458,11 +456,11 @@ def main():
     if groups:
         group = groups[-1]
         st.markdown(f'<div class="chat-bubble-result">🌐 {group["result"]}</div>', unsafe_allow_html=True)
-        st.markdown(f'<div class="chat-bubble-pol">🤝 {group["polite"]}</div>', unsafe_allow_html=True)
+        st.markdown(f'<div class="chat-bubble-pol">{group["polite"]}</div>', unsafe_allow_html=True)
     # 其余历史依次往下
     for group in reversed(groups[:-1]):
         st.markdown(f'<div class="chat-bubble-result">🌐 {group["result"]}</div>', unsafe_allow_html=True)
-        st.markdown(f'<div class="chat-bubble-pol">🤝 {group["polite"]}</div>', unsafe_allow_html=True)
+        st.markdown(f'<div class="chat-bubble-pol">{group["polite"]}</div>', unsafe_allow_html=True)
 
     # 自动处理最新一条未翻译的用户消息
     chat_history = st.session_state.get('chat_history', [])
