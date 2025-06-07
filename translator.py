@@ -345,7 +345,7 @@ def main():
                     st.session_state['chat_history'].append({'role':'user','text':st.session_state['input_area'],'lang':'auto'})
                     st.session_state['input_area'] = ''
                     st.session_state['pending_send'] = True
-                    st.experimental_rerun()
+                    st.rerun()
 
     # 输入框
     st.markdown('<div style="margin-bottom:12px;"></div>', unsafe_allow_html=True)
@@ -369,7 +369,7 @@ def main():
         st.session_state['chat_history'].append({'role':'user','text':user_input,'lang':'auto'})
         st.session_state['input_area'] = ''
         st.session_state['pending_send'] = True
-        st.experimental_rerun()
+        st.rerun()
 
     # 自动处理最新一条未翻译的用户消息
     chat_history = st.session_state.get('chat_history', [])
@@ -390,7 +390,7 @@ def main():
                         st.session_state['loading_message'] = ''
                         st.session_state['pending_send'] = False
                         st.session_state['auto_translate'] = False
-                        st.experimental_rerun()
+                        st.rerun()
             except Exception as e:
                 st.error(f"翻译过程中出现错误: {str(e)}")
                 st.session_state['pending_send'] = False
