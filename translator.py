@@ -332,7 +332,17 @@ def main():
                              label_visibility='collapsed')
     
     # 按钮区
-    col1, col2, col3, col4, col5, col6, col7 = st.columns([2,2,2,2,2,2,4])
+    st.markdown('<div style="margin-bottom:12px;"></div>', unsafe_allow_html=True)
+    
+    # 创建两行按钮布局
+    cols1 = st.columns(8)  # 第一行8个按钮
+    cols2 = st.columns(8)  # 第二行8个按钮
+    cols3 = st.columns(8)  # 第三行8个按钮
+    cols4 = st.columns(8)  # 第四行8个按钮
+    cols5 = st.columns(8)  # 第五行8个按钮
+    
+    # 将所有列合并为一个列表
+    all_cols = cols1 + cols2 + cols3 + cols4 + cols5
     
     # 语言按钮
     languages = {
@@ -341,24 +351,62 @@ def main():
         '波斯语': '🇮🇷',
         '日语': '🇯🇵',
         '韩语': '🇰🇷',
-        '法语': '🇫🇷'
+        '法语': '🇫🇷',
+        '德语': '🇩🇪',
+        '西班牙语': '🇪🇸',
+        '意大利语': '🇮🇹',
+        '葡萄牙语': '🇵🇹',
+        '俄语': '🇷🇺',
+        '阿拉伯语': '🇸🇦',
+        '泰语': '🇹🇭',
+        '越南语': '🇻🇳',
+        '印尼语': '🇮🇩',
+        '马来语': '🇲🇾',
+        '菲律宾语': '🇵🇭',
+        '土耳其语': '🇹🇷',
+        '希腊语': '🇬🇷',
+        '荷兰语': '🇳🇱',
+        '波兰语': '🇵🇱',
+        '瑞典语': '🇸🇪',
+        '丹麦语': '🇩🇰',
+        '芬兰语': '🇫🇮',
+        '挪威语': '🇳🇴',
+        '捷克语': '🇨🇿',
+        '匈牙利语': '🇭🇺',
+        '罗马尼亚语': '🇷🇴',
+        '保加利亚语': '🇧🇬',
+        '乌克兰语': '🇺🇦',
+        '希伯来语': '🇮🇱',
+        '印地语': '🇮🇳',
+        '孟加拉语': '🇧🇩',
+        '泰米尔语': '🇱🇰',
+        '乌尔都语': '🇵🇰',
+        '高棉语': '🇰🇭',
+        '缅甸语': '🇲🇲',
+        '老挝语': '🇱🇦',
+        '蒙古语': '🇲🇳',
+        '哈萨克语': '🇰🇿',
+        '乌兹别克语': '🇺🇿'
     }
     
     # 创建语言按钮
     for i, (lang, flag) in enumerate(languages.items()):
-        with locals()[f'col{i+1}']:
-            if st.button(f'{flag} {lang}', key=f'lang_{lang}', use_container_width=True):
-                st.session_state['target_language'] = lang
-                st.session_state['auto_translate'] = True
-                if user_input:
-                    st.session_state['last_input'] = user_input
-                    st.session_state['chat_history'].append({'role':'user','text':user_input,'lang':'auto'})
-                    st.session_state['input_area'] = ''
-                    st.session_state['pending_send'] = True
-                    st.experimental_rerun()
+        if i < len(all_cols):  # 确保不超出列数
+            with all_cols[i]:
+                if st.button(f'{flag} {lang}', key=f'lang_{lang}', use_container_width=True):
+                    st.session_state['target_language'] = lang
+                    st.session_state['auto_translate'] = True
+                    if user_input:
+                        st.session_state['last_input'] = user_input
+                        st.session_state['chat_history'].append({'role':'user','text':user_input,'lang':'auto'})
+                        st.session_state['input_area'] = ''
+                        st.session_state['pending_send'] = True
+                        st.experimental_rerun()
     
     # 发送按钮
-    with col7:
+    st.markdown('<div style="margin-top:12px;"></div>', unsafe_allow_html=True)
+    col1, col2, col3 = st.columns([3,2,3])
+    with col2:
         send_clicked = st.button('发送', key='send_btn', use_container_width=True)
         if send_clicked:
             st.session_state['target_language'] = '中文'  # 默认翻译为中文
