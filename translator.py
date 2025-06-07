@@ -322,86 +322,37 @@ def main():
     if 'auto_translate' not in st.session_state:
         st.session_state['auto_translate'] = False
 
-    # 顶部输入区和按钮区
-    st.markdown('<div style="margin-bottom:24px;"></div>', unsafe_allow_html=True)
+    # 语言按钮
+    languages = {
+        '英语': '🇬🇧',
+        '波斯语': '🇮🇷',
+        '乌兹别克语': '🇺🇿',
+        '日语': '🇯🇵'
+    }
     
+    # 按钮区
+    st.markdown('<div style="margin-bottom:12px;"></div>', unsafe_allow_html=True)
+    cols = st.columns(4)
+    
+    # 创建语言按钮
+    for i, (lang, flag) in enumerate(languages.items()):
+        with cols[i]:
+            if st.button(f'{flag} {lang}', key=f'lang_{lang}', use_container_width=True):
+                st.session_state['target_language'] = lang
+                st.session_state['auto_translate'] = True
+                if st.session_state.get('input_area'):
+                    st.session_state['last_input'] = st.session_state['input_area']
+                    st.session_state['chat_history'].append({'role':'user','text':st.session_state['input_area'],'lang':'auto'})
+                    st.session_state['input_area'] = ''
+                    st.session_state['pending_send'] = True
+                    st.experimental_rerun()
+
     # 输入框
+    st.markdown('<div style="margin-bottom:12px;"></div>', unsafe_allow_html=True)
     user_input = st.text_input("", value=st.session_state.get('input_area', ''), 
                              placeholder="请输入内容并回车或点击发送...", 
                              key='input_area_text', 
                              label_visibility='collapsed')
-    
-    # 按钮区
-    st.markdown('<div style="margin-bottom:12px;"></div>', unsafe_allow_html=True)
-    
-    # 创建两行按钮布局
-    cols1 = st.columns(8)  # 第一行8个按钮
-    cols2 = st.columns(8)  # 第二行8个按钮
-    cols3 = st.columns(8)  # 第三行8个按钮
-    cols4 = st.columns(8)  # 第四行8个按钮
-    cols5 = st.columns(8)  # 第五行8个按钮
-    
-    # 将所有列合并为一个列表
-    all_cols = cols1 + cols2 + cols3 + cols4 + cols5
-    
-    # 语言按钮
-    languages = {
-        '中文': '🇨🇳',
-        '英语': '🇬🇧',
-        '波斯语': '🇮🇷',
-        '日语': '🇯🇵',
-        '韩语': '🇰🇷',
-        '法语': '🇫🇷',
-        '德语': '🇩🇪',
-        '西班牙语': '🇪🇸',
-        '意大利语': '🇮🇹',
-        '葡萄牙语': '🇵🇹',
-        '俄语': '🇷🇺',
-        '阿拉伯语': '🇸🇦',
-        '泰语': '🇹🇭',
-        '越南语': '🇻🇳',
-        '印尼语': '🇮🇩',
-        '马来语': '🇲🇾',
-        '菲律宾语': '🇵🇭',
-        '土耳其语': '🇹🇷',
-        '希腊语': '🇬🇷',
-        '荷兰语': '🇳🇱',
-        '波兰语': '🇵🇱',
-        '瑞典语': '🇸🇪',
-        '丹麦语': '🇩🇰',
-        '芬兰语': '🇫🇮',
-        '挪威语': '🇳🇴',
-        '捷克语': '🇨🇿',
-        '匈牙利语': '🇭🇺',
-        '罗马尼亚语': '🇷🇴',
-        '保加利亚语': '🇧🇬',
-        '乌克兰语': '🇺🇦',
-        '希伯来语': '🇮🇱',
-        '印地语': '🇮🇳',
-        '孟加拉语': '🇧🇩',
-        '泰米尔语': '🇱🇰',
-        '乌尔都语': '🇵🇰',
-        '高棉语': '🇰🇭',
-        '缅甸语': '🇲🇲',
-        '老挝语': '🇱🇦',
-        '蒙古语': '🇲🇳',
-        '哈萨克语': '🇰🇿',
-        '乌兹别克语': '🇺🇿'
-    }
-    
-    # 创建语言按钮
-    for i, (lang, flag) in enumerate(languages.items()):
-        if i < len(all_cols):  # 确保不超出列数
-            with all_cols[i]:
-                if st.button(f'{flag} {lang}', key=f'lang_{lang}', use_container_width=True):
-                    st.session_state['target_language'] = lang
-                    st.session_state['auto_translate'] = True
-                    if user_input:
-                        st.session_state['last_input'] = user_input
-                        st.session_state['chat_history'].append({'role':'user','text':user_input,'lang':'auto'})
-                        st.session_state['input_area'] = ''
-                        st.session_state['pending_send'] = True
-                        st.experimental_rerun()
     
     # 发送按钮
     st.markdown('<div style="margin-top:12px;"></div>', unsafe_allow_html=True)
@@ -424,19 +375,26 @@ def main():
     chat_history = st.session_state.get('chat_history', [])
     if st.session_state.get('pending_send', False):
         if chat_history and (not chat_history[-1].get('handled')) and chat_history[-1]['role']=='user':
-            user_msg = chat_history[-1]['text']
-            target_lang = st.session_state.get('target_language', '中文')
-            st.session_state['loading_message'] = '翻译中...'
-            result = translate_text(user_msg, target_lang)
-            st.session_state['chat_history'].append({'role':'result','text':result,'lang':target_lang})
-            st.session_state['loading_message'] = '生成高情商回复...'
-            polite = generate_polite_response(result)
-            st.session_state['chat_history'].append({'role':'polite','text':polite,'lang':target_lang})
-            st.session_state['chat_history'][-3]['handled'] = True
-            st.session_state['loading_message'] = ''
-            st.session_state['pending_send'] = False
-            st.session_state['auto_translate'] = False
-            st.experimental_rerun()
+            try:
+                user_msg = chat_history[-1]['text']
+                target_lang = st.session_state.get('target_language', '中文')
+                st.session_state['loading_message'] = '翻译中...'
+                result = translate_text(user_msg, target_lang)
+                if result:  # 确保翻译结果不为空
+                    st.session_state['chat_history'].append({'role':'result','text':result,'lang':target_lang})
+                    st.session_state['loading_message'] = '生成高情商回复...'
+                    polite = generate_polite_response(result)
+                    if polite:  # 确保高情商回复不为空
+                        st.session_state['chat_history'].append({'role':'polite','text':polite,'lang':target_lang})
+                        st.session_state['chat_history'][-3]['handled'] = True
+                        st.session_state['loading_message'] = ''
+                        st.session_state['pending_send'] = False
+                        st.session_state['auto_translate'] = False
+                        st.experimental_rerun()
+            except Exception as e:
+                st.error(f"翻译过程中出现错误: {str(e)}")
+                st.session_state['pending_send'] = False
+                st.session_state['loading_message'] = ''
 
     # 聊天历史区
     st.markdown('<div class="chat-history">', unsafe_allow_html=True)
