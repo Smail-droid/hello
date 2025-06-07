@@ -363,7 +363,8 @@ def main():
 
     # 聊天历史区
     st.markdown('<div class="chat-history" style="margin-top:12px;">', unsafe_allow_html=True)
-    for msg in st.session_state['chat_history']:
+    # 倒序显示聊天历史
+    for msg in reversed(st.session_state['chat_history']):
         if msg['role'] == 'user':
             st.markdown(f'<div class="chat-bubble-user">🧑‍💻 {msg["text"]}</div>', unsafe_allow_html=True)
         elif msg['role'] == 'result':
