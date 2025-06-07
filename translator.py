@@ -423,13 +423,16 @@ def main():
         with lang_cols[i]:
             if st.button(lang, key=f'lang_btn_{lang}', use_container_width=True):
                 st.session_state['target_language'] = lang
-                # 只要有输入内容，每次点击都追加user消息并触发翻译
-                input_val = st.session_state.get('input_area', '')
+                # 直接读取输入框内容（user_input），不依赖input_area
+                if 'user_input_cache' in st.session_state:
+                    input_val = st.session_state['user_input_cache']
+                else:
+                    input_val = ''
                 if input_val:
                     st.session_state['last_input'] = input_val
                     st.session_state['chat_history'].append({'role':'user','text':input_val,'lang':'auto'})
-                    st.session_state['input_area'] = ''
                     st.session_state['pending_send'] = True
+                st.session_state['lang_btn_clicked'] = True
                 st.rerun()
 
     # 输入框和发送按钮
@@ -440,6 +443,7 @@ def main():
                                  placeholder="请输入内容并回车或点击发送...", 
                                  key='input_area_text', 
                                  label_visibility='collapsed')
+        st.session_state['user_input_cache'] = user_input
     with col2:
         send_clicked = st.button('发送', key='send_btn', use_container_width=True)
         if send_clicked:
@@ -472,7 +476,6 @@ def main():
     if send_clicked or (user_input and user_input != '' and st.session_state.get('last_input','') != user_input):
         st.session_state['last_input'] = user_input
         st.session_state['chat_history'].append({'role':'user','text':user_input,'lang':'auto'})
-        st.session_state['input_area'] = ''
         st.session_state['pending_send'] = True
         st.rerun()
 
@@ -495,6 +498,8 @@ def main():
                         st.session_state['loading_message'] = ''
                         st.session_state['pending_send'] = False
                         st.session_state['auto_translate'] = False
+                        st.session_state['input_area'] = ''  # 翻译成功后清空输入框
+                        st.session_state['user_input_cache'] = ''
                         st.rerun()
             except Exception as e:
                 st.error(f"翻译过程中出现错误: {str(e)}")
