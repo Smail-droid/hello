@@ -307,6 +307,7 @@ def main():
         st.session_state['polite_area'] = ""
 
     # 顶部加载提示动画
+    loading_message = st.session_state.get('loading_message', '')
     st.markdown("""
     <style>
     .centered-loading {
@@ -347,10 +348,10 @@ def main():
     }
     </style>
     """, unsafe_allow_html=True)
-    if st.session_state.loading_message:
+    if loading_message:
         st.markdown(f"""
         <div class='centered-loading'>
-            <span class='lds-dual-ring'></span>{st.session_state.loading_message}
+            <span class='lds-dual-ring'></span>{loading_message}
         </div>
         """, unsafe_allow_html=True)
 
