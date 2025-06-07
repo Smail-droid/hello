@@ -312,38 +312,23 @@ def translate_text(text, target_language):
         return f"翻译失败: {str(e)}"
 
 def generate_polite_response(text):
-    """Generate a polite response using OpenAI API"""
+    """Generate a polite response using OpenAI API, no emoji, no '加油' etc."""
     try:
         headers = {
             "Content-Type": "application/json",
             "Authorization": f"Bearer {API_KEY}"
         }
-        
         data = {
             "model": "gpt-3.5-turbo",
             "messages": [
-                {"role": "system", "content": """你是一个擅长增进感情和建立良好关系的助手。请根据用户输入的内容，生成一个简短但温暖的回复。
-                回复要求：
-                1. 控制在30字以内
-                2. 表达真诚的关心和理解
-                3. 使用温暖友善的语气
-                4. 可以适当使用1-2个表情符号
-                5. 保持自然，避免过于做作
-                6. 避免过于正式或客套的表达
-                7. 重点突出：
-                   - 表达理解和认同
-                   - 给予真诚的赞美
-                   - 表达关心和在意
-                请记住，简短但温暖的回复往往更有力量。"""},
+                {"role": "system", "content": "你是一个擅长增进感情和建立良好关系的助手。请根据用户输入的内容，生成一个简短但温暖的回复。回复要求：1. 控制在30字以内 2. 表达真诚的关心和理解 3. 使用温暖友善的语气 4. 不要使用任何表情符号 5. 不要出现'加油'、'祝你好运'等鼓励性口号，只表达理解、关心和支持。6. 保持自然，避免过于做作。7. 重点突出：表达理解和认同，给予真诚的赞美，表达关心和在意。请记住，简短但温暖的回复往往更有力量。"},
                 {"role": "user", "content": text}
             ],
             "temperature": 0.7
         }
-        
         response = requests.post(API_URL, headers=headers, json=data)
         response.raise_for_status()
         result = response.json()
-        
         if isinstance(result, dict):
             choices = result.get('choices', [])
             if choices and isinstance(choices[0], dict):
@@ -351,7 +336,6 @@ def generate_polite_response(text):
                 if isinstance(message, dict):
                     return message.get('content', 'Error: No content in response')
         return "Error: Unexpected response format from API"
-            
     except Exception as e:
         return f"生成回复失败: {str(e)}"
 
@@ -449,8 +433,14 @@ def main():
                 st.session_state['last_input'] = st.session_state['input_area']
                 st.session_state['chat_history'].append({'role':'user','text':st.session_state['input_area'],'lang':'auto'})
                 st.session_state['pending_send'] = True
-                st.session_state['clear_input'] = True  # 发送后清空输入框
+                st.session_state['clear_input'] = True  # 标记清空
             st.rerun()
+
+    # 如果clear_input为True，先清空input_area再rerun
+    if st.session_state.get('clear_input', False):
+        st.session_state['input_area'] = ''
+        st.session_state['clear_input'] = False
+        st.rerun()
 
     # 结果区：输入框下方只显示最新一组，历史组依次往下
     history = st.session_state['chat_history']
