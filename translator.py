@@ -124,11 +124,35 @@ st.markdown("""
     .lang-btn {border:none; background:transparent; font-size:1.5rem; margin:0 4px; cursor:pointer;}
     .send-btn {background:#1976D2; color:#fff; border:none; border-radius:6px; padding:8px 24px; font-size:1.1rem; margin-left:8px; cursor:pointer;}
     @media (max-width:600px) {.chat-bubble-user,.chat-bubble-result,.chat-bubble-pol{max-width:95%;}}
-    .lang-btn-bar {display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 16px;}
-    .lang-btn-bar button {flex: 1 1 120px; min-width: 100px; max-width: 180px; margin: 0;}
-    @media (max-width: 600px) {
-        .lang-btn-bar {gap: 4px;}
-        .lang-btn-bar button {min-width: 80px; max-width: 100%;}
+    .lang-btn-bar {display: flex; flex-wrap: wrap; gap: 12px; margin-bottom: 18px; justify-content: flex-start;}
+    .lang-btn-bar button {
+        flex: 1 1 120px;
+        min-width: 80px;
+        max-width: 180px;
+        height: 44px;
+        font-size: 1.1rem;
+        border: none;
+        border-radius: 10px;
+        background: linear-gradient(90deg, #4f8cff 0%, #6ee7b7 100%);
+        color: #fff;
+        box-shadow: 0 2px 8px rgba(79,140,255,0.10), 0 1.5px 6px rgba(110,231,183,0.10);
+        transition: transform 0.15s, box-shadow 0.15s, background 0.3s;
+        cursor: pointer;
+        outline: none;
+        margin: 0;
+        padding: 0 8px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+    .lang-btn-bar button:hover {
+        background: linear-gradient(90deg, #6ee7b7 0%, #4f8cff 100%);
+        box-shadow: 0 4px 16px rgba(79,140,255,0.18), 0 2px 8px rgba(110,231,183,0.18);
+        transform: scale(1.06);
+    }
+    @media (max-width: 700px) {
+        .lang-btn-bar {gap: 8px;}
+        .lang-btn-bar button {min-width: 60px; font-size: 1rem;}
     }
 </style>
 """, unsafe_allow_html=True)
@@ -334,26 +358,50 @@ def main():
         '英语': '🇬🇧',
         '波斯语': '🇮🇷',
         '乌兹别克语': '🇺🇿',
-        '日语': '🇯��'
+        '日语': '🇯🇵'
     }
     
-    # 语言按钮自适应布局
+    # 语言按钮自适应布局（只显示中文名称，一行4个，自适应换行）
     st.markdown('''
     <style>
-    .lang-btn-bar {display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 16px;}
-    .lang-btn-bar button {flex: 1 1 120px; min-width: 100px; max-width: 180px; margin: 0;}
-    @media (max-width: 600px) {
-        .lang-btn-bar {gap: 4px;}
-        .lang-btn-bar button {min-width: 80px; max-width: 100%;}
+    .lang-btn-bar {display: flex; flex-wrap: wrap; gap: 12px; margin-bottom: 18px; justify-content: flex-start;}
+    .lang-btn-bar button {
+        flex: 1 1 120px;
+        min-width: 80px;
+        max-width: 180px;
+        height: 44px;
+        font-size: 1.1rem;
+        border: none;
+        border-radius: 10px;
+        background: linear-gradient(90deg, #4f8cff 0%, #6ee7b7 100%);
+        color: #fff;
+        box-shadow: 0 2px 8px rgba(79,140,255,0.10), 0 1.5px 6px rgba(110,231,183,0.10);
+        transition: transform 0.15s, box-shadow 0.15s, background 0.3s;
+        cursor: pointer;
+        outline: none;
+        margin: 0;
+        padding: 0 8px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+    .lang-btn-bar button:hover {
+        background: linear-gradient(90deg, #6ee7b7 0%, #4f8cff 100%);
+        box-shadow: 0 4px 16px rgba(79,140,255,0.18), 0 2px 8px rgba(110,231,183,0.18);
+        transform: scale(1.06);
+    }
+    @media (max-width: 700px) {
+        .lang-btn-bar {gap: 8px;}
+        .lang-btn-bar button {min-width: 60px; font-size: 1rem;}
     }
     </style>
     <div class="lang-btn-bar" id="lang-btn-bar"></div>
     ''', unsafe_allow_html=True)
     btn_html = ""
     btn_keys = list(languages.keys())
-    for i, (lang, flag) in enumerate(languages.items()):
+    for i, lang in enumerate(languages.keys()):
         btn_html += f'''<form style="display:inline;" action="#" method="post">
-        <button type="submit" name="lang_btn_{i}" style="font-size:1.1rem;">{flag} {lang}</button></form>'''
+        <button type="submit" name="lang_btn_{i}" title="{lang}">{lang}</button></form>'''
     components.html(f'''<div class="lang-btn-bar">{btn_html}</div>''', height=60, scrolling=False)
     # 处理按钮点击
     for i, lang in enumerate(btn_keys):
