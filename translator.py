@@ -295,9 +295,9 @@ def translate_text(text, target_language):
                     return message.get('content', 'Error: No content in response')
         return "Error: Unexpected response format from API"
     except requests.exceptions.HTTPError as e:
-        if e.response is not None and e.response.status_code == 429:
-            st.error('请求过于频繁，请稍后再试。')
-            return '翻译失败: 请求过于频繁，请稍后再试。'
+        if e.response is not None:
+            st.error(f'API请求错误: {e.response.text}')
+            return f'翻译失败: {e.response.text}'
         else:
             st.error(f'API请求错误: {str(e)}')
             return f'翻译失败: API请求错误'
@@ -334,9 +334,9 @@ def generate_polite_response(text):
                     return message.get('content', 'Error: No content in response')
         return "Error: Unexpected response format from API"
     except requests.exceptions.HTTPError as e:
-        if e.response is not None and e.response.status_code == 429:
-            st.error('请求过于频繁，请稍后再试。')
-            return '生成回复失败: 请求过于频繁，请稍后再试。'
+        if e.response is not None:
+            st.error(f'API请求错误: {e.response.text}')
+            return f'生成回复失败: {e.response.text}'
         else:
             st.error(f'API请求错误: {str(e)}')
             return f'生成回复失败: API请求错误'
