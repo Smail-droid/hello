@@ -380,6 +380,8 @@ def main():
         st.session_state['pending_send'] = False
     if 'auto_translate' not in st.session_state:
         st.session_state['auto_translate'] = False
+    if 'clear_input' not in st.session_state:
+        st.session_state['clear_input'] = False
 
     # 语言按钮
     languages = {
@@ -434,7 +436,11 @@ def main():
     st.markdown('<div style="margin-bottom:12px;"></div>', unsafe_allow_html=True)
     col1, col2 = st.columns([5,1])
     with col1:
-        user_input = st.text_input("", placeholder="请输入内容并回车或点击发送...", key='input_area', label_visibility='collapsed')
+        if st.session_state.get('clear_input', False):
+            user_input = st.text_input("", value="", key='input_area', placeholder="请输入内容并回车或点击发送...", label_visibility='collapsed')
+            st.session_state['clear_input'] = False
+        else:
+            user_input = st.text_input("", key='input_area', placeholder="请输入内容并回车或点击发送...", label_visibility='collapsed')
     with col2:
         send_clicked = st.button('发送', key='send_btn', use_container_width=True)
         if send_clicked:
@@ -486,7 +492,7 @@ def main():
                         st.session_state['loading_message'] = ''
                         st.session_state['pending_send'] = False
                         st.session_state['auto_translate'] = False
-                        st.session_state['input_area'] = ''  # 翻译成功后清空输入框
+                        st.session_state['clear_input'] = True  # 翻译成功后清空输入框
                         st.rerun()
             except Exception as e:
                 st.error(f"翻译过程中出现错误: {str(e)}")
