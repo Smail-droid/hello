@@ -434,18 +434,14 @@ def main():
     st.markdown('<div style="margin-bottom:12px;"></div>', unsafe_allow_html=True)
     col1, col2 = st.columns([5,1])
     with col1:
-        user_input = st.text_input("", value=st.session_state.get('input_area', ''), 
-                                 placeholder="请输入内容并回车或点击发送...", 
-                                 key='input_area', 
-                                 label_visibility='collapsed')
-        st.session_state['input_area'] = user_input
+        user_input = st.text_input("", placeholder="请输入内容并回车或点击发送...", key='input_area', label_visibility='collapsed')
     with col2:
         send_clicked = st.button('发送', key='send_btn', use_container_width=True)
         if send_clicked:
             st.session_state['target_language'] = '中文'  # 默认翻译为中文
-            if user_input:
-                st.session_state['last_input'] = user_input
-                st.session_state['chat_history'].append({'role':'user','text':user_input,'lang':'auto'})
+            if st.session_state.get('input_area', ''):
+                st.session_state['last_input'] = st.session_state['input_area']
+                st.session_state['chat_history'].append({'role':'user','text':st.session_state['input_area'],'lang':'auto'})
                 st.session_state['pending_send'] = True
             st.rerun()
 
