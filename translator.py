@@ -308,13 +308,19 @@ def copy_to_clipboard(text):
 def main():
     # 初始化聊天历史
     if 'chat_history' not in st.session_state:
-        st.session_state['chat_history'] = []  # 每条为dict: {'role': 'user'/'result'/'polite', 'text': str, 'lang': str}
+        st.session_state['chat_history'] = []
     if 'target_language' not in st.session_state:
         st.session_state['target_language'] = '中文'
     if 'input_area' not in st.session_state:
         st.session_state['input_area'] = ''
     if 'loading_message' not in st.session_state:
         st.session_state['loading_message'] = ''
+    if 'last_input' not in st.session_state:
+        st.session_state['last_input'] = ''
+
+    # 目标语言选择下拉框
+    language_options = ['中文', '英语', '波斯语']
+    st.session_state['target_language'] = st.selectbox('目标语言', language_options, index=language_options.index(st.session_state.get('target_language', '中文')))
 
     # 聊天历史区
     st.markdown('<div class="chat-history">', unsafe_allow_html=True)
@@ -329,15 +335,15 @@ def main():
 
     # 底部输入区
     st.markdown('<div class="chat-bottom-bar">', unsafe_allow_html=True)
-    col1, col2, col3, col4 = st.columns([1,1,8,2])
+    col1, col2, col3, col4 = st.columns([2,2,8,2])
     with col1:
-        if st.button('🇬🇧', key='lang_en', help='翻译为英语', use_container_width=True):
+        if st.button('英语 🇬🇧', key='lang_en', help='翻译为英语', use_container_width=True):
             st.session_state['target_language'] = '英语'
     with col2:
-        if st.button('🇮🇷', key='lang_fa', help='翻译为波斯语', use_container_width=True):
+        if st.button('波斯语 🇮🇷', key='lang_fa', help='翻译为波斯语', use_container_width=True):
             st.session_state['target_language'] = '波斯语'
     with col3:
-        user_input = st.text_input("", value=st.session_state['input_area'], placeholder="请输入内容并回车或点击发送...", key='input_area_text', label_visibility='collapsed')
+        user_input = st.text_input("", value=st.session_state.get('input_area', ''), placeholder="请输入内容并回车或点击发送...", key='input_area_text', label_visibility='collapsed')
     with col4:
         send_clicked = st.button('发送', key='send_btn', use_container_width=True)
     st.markdown('</div>', unsafe_allow_html=True)
@@ -345,16 +351,16 @@ def main():
     # 发送逻辑
     if send_clicked or (user_input and user_input != '' and st.session_state.get('last_input','') != user_input):
         st.session_state['last_input'] = user_input
-        # 追加用户消息
         st.session_state['chat_history'].append({'role':'user','text':user_input,'lang':'auto'})
         st.session_state['input_area'] = ''
         st.session_state['loading_message'] = '翻译中...'
         st.experimental_rerun()
 
     # 自动处理最新一条未翻译的用户消息
-    if st.session_state['chat_history'] and (not st.session_state['chat_history'][-1].get('handled')) and st.session_state['chat_history'][-1]['role']=='user':
-        user_msg = st.session_state['chat_history'][-1]['text']
-        target_lang = st.session_state['target_language']
+    chat_history = st.session_state.get('chat_history', [])
+    if chat_history and (not chat_history[-1].get('handled')) and chat_history[-1]['role']=='user':
+        user_msg = chat_history[-1]['text']
+        target_lang = st.session_state.get('target_language', '中文')
         st.session_state['loading_message'] = '翻译中...'
         result = translate_text(user_msg, target_lang)
         st.session_state['chat_history'].append({'role':'result','text':result,'lang':target_lang})
