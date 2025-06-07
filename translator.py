@@ -126,16 +126,16 @@ st.markdown("""
     @media (max-width:600px) {.chat-bubble-user,.chat-bubble-result,.chat-bubble-pol{max-width:95%;}}
     .lang-btn-bar {display: flex; flex-wrap: wrap; gap: 12px; margin-bottom: 18px; justify-content: flex-start;}
     .lang-btn-bar button {
-        flex: 1 1 120px;
+        flex: 1 1 22%;
         min-width: 80px;
-        max-width: 180px;
+        max-width: 100%;
         height: 44px;
         font-size: 1.1rem;
         border: none;
-        border-radius: 10px;
-        background: linear-gradient(90deg, #4f8cff 0%, #6ee7b7 100%);
+        border-radius: 6px;
+        background: #1890ff;
         color: #fff;
-        box-shadow: 0 2px 8px rgba(79,140,255,0.10), 0 1.5px 6px rgba(110,231,183,0.10);
+        box-shadow: 0 2px 8px rgba(24,144,255,0.10);
         transition: transform 0.15s, box-shadow 0.15s, background 0.3s;
         cursor: pointer;
         outline: none;
@@ -146,13 +146,15 @@ st.markdown("""
         justify-content: center;
     }
     .lang-btn-bar button:hover {
-        background: linear-gradient(90deg, #6ee7b7 0%, #4f8cff 100%);
-        box-shadow: 0 4px 16px rgba(79,140,255,0.18), 0 2px 8px rgba(110,231,183,0.18);
+        background: #40a9ff;
+        box-shadow: 0 4px 16px rgba(24,144,255,0.18);
         transform: scale(1.06);
     }
-    @media (max-width: 700px) {
-        .lang-btn-bar {gap: 8px;}
-        .lang-btn-bar button {min-width: 60px; font-size: 1rem;}
+    @media (max-width: 900px) {
+        .lang-btn-bar button {flex: 1 1 45%;}
+    }
+    @media (max-width: 600px) {
+        .lang-btn-bar button {flex: 1 1 90%; min-width: 60px; font-size: 1rem;}
     }
 </style>
 """, unsafe_allow_html=True)
@@ -361,21 +363,21 @@ def main():
         '日语': '🇯🇵'
     }
     
-    # 语言按钮自适应布局（只显示中文名称，一行4个，自适应换行）
+    # 语言按钮自适应布局（与发送按钮同样式，一行最多4个，自适应换行）
     st.markdown('''
     <style>
     .lang-btn-bar {display: flex; flex-wrap: wrap; gap: 12px; margin-bottom: 18px; justify-content: flex-start;}
     .lang-btn-bar button {
-        flex: 1 1 120px;
+        flex: 1 1 22%;
         min-width: 80px;
-        max-width: 180px;
+        max-width: 100%;
         height: 44px;
         font-size: 1.1rem;
         border: none;
-        border-radius: 10px;
-        background: linear-gradient(90deg, #4f8cff 0%, #6ee7b7 100%);
+        border-radius: 6px;
+        background: #1890ff;
         color: #fff;
-        box-shadow: 0 2px 8px rgba(79,140,255,0.10), 0 1.5px 6px rgba(110,231,183,0.10);
+        box-shadow: 0 2px 8px rgba(24,144,255,0.10);
         transition: transform 0.15s, box-shadow 0.15s, background 0.3s;
         cursor: pointer;
         outline: none;
@@ -386,13 +388,15 @@ def main():
         justify-content: center;
     }
     .lang-btn-bar button:hover {
-        background: linear-gradient(90deg, #6ee7b7 0%, #4f8cff 100%);
-        box-shadow: 0 4px 16px rgba(79,140,255,0.18), 0 2px 8px rgba(110,231,183,0.18);
+        background: #40a9ff;
+        box-shadow: 0 4px 16px rgba(24,144,255,0.18);
         transform: scale(1.06);
     }
-    @media (max-width: 700px) {
-        .lang-btn-bar {gap: 8px;}
-        .lang-btn-bar button {min-width: 60px; font-size: 1rem;}
+    @media (max-width: 900px) {
+        .lang-btn-bar button {flex: 1 1 45%;}
+    }
+    @media (max-width: 600px) {
+        .lang-btn-bar button {flex: 1 1 90%; min-width: 60px; font-size: 1rem;}
     }
     </style>
     <div class="lang-btn-bar" id="lang-btn-bar"></div>
@@ -429,10 +433,8 @@ def main():
             st.session_state['target_language'] = '中文'  # 默认翻译为中文
             st.session_state['auto_translate'] = True
 
-    # 聊天历史区（最新一组在输入框下方，历史依次往下）
+    # 聊天历史区（输入框下方只显示最新一组，历史依次往下）
     st.markdown('<div class="chat-history" style="margin-top:12px;">', unsafe_allow_html=True)
-    # 只显示 result+polite 组，不显示 user
-    # 先分组
     history = st.session_state['chat_history']
     groups = []
     i = 0
@@ -444,8 +446,13 @@ def main():
                 i += 1
             groups.append(group)
         i += 1
-    # 倒序显示，最新一组在最上
-    for group in reversed(groups):
+    # 最新一组在输入框下方
+    if groups:
+        group = groups[-1]
+        st.markdown(f'<div class="chat-bubble-result">🌐 {group["result"]}</div>', unsafe_allow_html=True)
+        st.markdown(f'<div class="chat-bubble-pol">🤝 {group["polite"]}</div>', unsafe_allow_html=True)
+    # 其余历史依次往下
+    for group in reversed(groups[:-1]):
         st.markdown(f'<div class="chat-bubble-result">🌐 {group["result"]}</div>', unsafe_allow_html=True)
         st.markdown(f'<div class="chat-bubble-pol">🤝 {group["polite"]}</div>', unsafe_allow_html=True)
     st.markdown('</div>', unsafe_allow_html=True)
