@@ -449,6 +449,7 @@ def main():
                 st.session_state['last_input'] = st.session_state['input_area']
                 st.session_state['chat_history'].append({'role':'user','text':st.session_state['input_area'],'lang':'auto'})
                 st.session_state['pending_send'] = True
+                st.session_state['clear_input'] = True  # 发送后清空输入框
             st.rerun()
 
     # 结果区：输入框下方只显示最新一组，历史组依次往下
