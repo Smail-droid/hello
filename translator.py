@@ -5,6 +5,7 @@ import time
 import json
 import requests
 from langdetect import detect
+import streamlit.components.v1 as components
 
 # 设置页面配置
 st.set_page_config(
@@ -123,6 +124,12 @@ st.markdown("""
     .lang-btn {border:none; background:transparent; font-size:1.5rem; margin:0 4px; cursor:pointer;}
     .send-btn {background:#1976D2; color:#fff; border:none; border-radius:6px; padding:8px 24px; font-size:1.1rem; margin-left:8px; cursor:pointer;}
     @media (max-width:600px) {.chat-bubble-user,.chat-bubble-result,.chat-bubble-pol{max-width:95%;}}
+    .lang-btn-bar {display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 16px;}
+    .lang-btn-bar button {flex: 1 1 120px; min-width: 100px; max-width: 180px; margin: 0;}
+    @media (max-width: 600px) {
+        .lang-btn-bar {gap: 4px;}
+        .lang-btn-bar button {min-width: 80px; max-width: 100%;}
+    }
 </style>
 """, unsafe_allow_html=True)
 
@@ -327,25 +334,38 @@ def main():
         '英语': '🇬🇧',
         '波斯语': '🇮🇷',
         '乌兹别克语': '🇺🇿',
-        '日语': '🇯🇵'
+        '日语': '🇯��'
     }
     
-    # 按钮区
-    st.markdown('<div style="margin-bottom:12px;"></div>', unsafe_allow_html=True)
-    cols = st.columns(4)
-    
-    # 创建语言按钮
+    # 语言按钮自适应布局
+    st.markdown('''
+    <style>
+    .lang-btn-bar {display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 16px;}
+    .lang-btn-bar button {flex: 1 1 120px; min-width: 100px; max-width: 180px; margin: 0;}
+    @media (max-width: 600px) {
+        .lang-btn-bar {gap: 4px;}
+        .lang-btn-bar button {min-width: 80px; max-width: 100%;}
+    }
+    </style>
+    <div class="lang-btn-bar" id="lang-btn-bar"></div>
+    ''', unsafe_allow_html=True)
+    btn_html = ""
+    btn_keys = list(languages.keys())
     for i, (lang, flag) in enumerate(languages.items()):
-        with cols[i]:
-            if st.button(f'{flag} {lang}', key=f'lang_{lang}', use_container_width=True):
-                st.session_state['target_language'] = lang
-                st.session_state['auto_translate'] = True
-                if st.session_state.get('input_area'):
-                    st.session_state['last_input'] = st.session_state['input_area']
-                    st.session_state['chat_history'].append({'role':'user','text':st.session_state['input_area'],'lang':'auto'})
-                    st.session_state['input_area'] = ''
-                    st.session_state['pending_send'] = True
-                    st.rerun()
+        btn_html += f'''<form style="display:inline;" action="#" method="post">
+        <button type="submit" name="lang_btn_{i}" style="font-size:1.1rem;">{flag} {lang}</button></form>'''
+    components.html(f'''<div class="lang-btn-bar">{btn_html}</div>''', height=60, scrolling=False)
+    # 处理按钮点击
+    for i, lang in enumerate(btn_keys):
+        if st.session_state.get(f'lang_btn_{i}'):
+            st.session_state['target_language'] = lang
+            st.session_state['auto_translate'] = True
+            if st.session_state.get('input_area'):
+                st.session_state['last_input'] = st.session_state['input_area']
+                st.session_state['chat_history'].append({'role':'user','text':st.session_state['input_area'],'lang':'auto'})
+                st.session_state['input_area'] = ''
+                st.session_state['pending_send'] = True
+                st.rerun()
 
     # 输入框和发送按钮
     st.markdown('<div style="margin-bottom:12px;"></div>', unsafe_allow_html=True)
