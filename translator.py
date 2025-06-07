@@ -265,20 +265,16 @@ def detect_language(text):
 def translate_text(text, target_language):
     """Translate text using OpenAI API"""
     global last_request_time
-    
     try:
         # 控制请求频率
         current_time = time.time()
         time_since_last_request = current_time - last_request_time
         if time_since_last_request < min_request_interval:
             time.sleep(min_request_interval - time_since_last_request)
-        
-        # 构建请求数据
         headers = {
             "Content-Type": "application/json",
             "Authorization": f"Bearer {API_KEY}"
         }
-        
         data = {
             "model": "gpt-3.5-turbo",
             "messages": [
@@ -287,15 +283,10 @@ def translate_text(text, target_language):
             ],
             "temperature": 0.3
         }
-        
-        # 发送请求
         response = requests.post(API_URL, headers=headers, json=data)
         response.raise_for_status()
         result = response.json()
-        
         last_request_time = time.time()
-        
-        # 检查响应格式
         if isinstance(result, dict):
             choices = result.get('choices', [])
             if choices and isinstance(choices[0], dict):
@@ -303,7 +294,13 @@ def translate_text(text, target_language):
                 if isinstance(message, dict):
                     return message.get('content', 'Error: No content in response')
         return "Error: Unexpected response format from API"
-            
+    except requests.exceptions.HTTPError as e:
+        if e.response is not None and e.response.status_code == 429:
+            st.error('请求过于频繁，请稍后再试。')
+            return '翻译失败: 请求过于频繁，请稍后再试。'
+        else:
+            st.error(f'API请求错误: {str(e)}')
+            return f'翻译失败: API请求错误'
     except requests.exceptions.RequestException as e:
         st.error(f"API请求错误: {str(e)}")
         return f"翻译失败: API请求错误"
@@ -336,6 +333,13 @@ def generate_polite_response(text):
                 if isinstance(message, dict):
                     return message.get('content', 'Error: No content in response')
         return "Error: Unexpected response format from API"
+    except requests.exceptions.HTTPError as e:
+        if e.response is not None and e.response.status_code == 429:
+            st.error('请求过于频繁，请稍后再试。')
+            return '生成回复失败: 请求过于频繁，请稍后再试。'
+        else:
+            st.error(f'API请求错误: {str(e)}')
+            return f'生成回复失败: API请求错误'
     except Exception as e:
         return f"生成回复失败: {str(e)}"
 
