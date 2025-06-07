@@ -159,6 +159,29 @@ st.markdown("""
     @media (max-width: 600px) {
         .lang-btn-bar button {flex: 1 1 100%; min-width: 60px; font-size: 1rem;}
     }
+    .custom-btn {
+        width: 100%;
+        height: 44px;
+        font-size: 1.1rem;
+        border: none;
+        border-radius: 6px;
+        background: #1890ff;
+        color: #fff;
+        box-shadow: 0 2px 8px rgba(24,144,255,0.10);
+        transition: transform 0.15s, box-shadow 0.15s, background 0.3s;
+        cursor: pointer;
+        outline: none;
+        margin: 0;
+        padding: 0 8px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+    .custom-btn:hover {
+        background: #40a9ff;
+        box-shadow: 0 4px 16px rgba(24,144,255,0.18);
+        transform: scale(1.06);
+    }
 </style>
 """, unsafe_allow_html=True)
 
@@ -366,14 +389,11 @@ def main():
         '日语': '🇯🇵'
     }
     
-    # 语言按钮自适应布局（与发送按钮同样式，一行4个，铺满屏幕）
+    # 语言按钮区（与发送按钮同样样式，一行4个，铺满宽度）
     st.markdown('''
     <style>
-    .lang-btn-bar {display: flex; flex-wrap: wrap; gap: 0; margin-bottom: 18px; justify-content: flex-start;}
-    .lang-btn-bar button {
-        flex: 1 1 25%;
-        min-width: 0;
-        max-width: 100%;
+    .custom-btn {
+        width: 100%;
         height: 44px;
         font-size: 1.1rem;
         border: none;
@@ -389,41 +409,27 @@ def main():
         display: flex;
         align-items: center;
         justify-content: center;
-        margin-right: 8px;
-        margin-bottom: 8px;
     }
-    .lang-btn-bar button:hover {
+    .custom-btn:hover {
         background: #40a9ff;
         box-shadow: 0 4px 16px rgba(24,144,255,0.18);
         transform: scale(1.06);
     }
-    .lang-btn-bar button:last-child {margin-right: 0;}
-    @media (max-width: 900px) {
-        .lang-btn-bar button {flex: 1 1 50%;}
-    }
-    @media (max-width: 600px) {
-        .lang-btn-bar button {flex: 1 1 100%; min-width: 60px; font-size: 1rem;}
-    }
     </style>
-    <div class="lang-btn-bar" id="lang-btn-bar"></div>
     ''', unsafe_allow_html=True)
-    btn_html = ""
-    btn_keys = list(languages.keys())
-    for i, lang in enumerate(languages.keys()):
-        btn_html += f'''<form style="display:inline;" action="#" method="post">
-        <button type="submit" name="lang_btn_{i}" title="{lang}">{lang}</button></form>'''
-    components.html(f'''<div class="lang-btn-bar">{btn_html}</div>''', height=60, scrolling=False)
-    # 处理按钮点击
-    for i, lang in enumerate(btn_keys):
-        if st.session_state.get(f'lang_btn_{i}'):
-            st.session_state['target_language'] = lang
-            st.session_state['auto_translate'] = True
-            if st.session_state.get('input_area'):
-                st.session_state['last_input'] = st.session_state['input_area']
-                st.session_state['chat_history'].append({'role':'user','text':st.session_state['input_area'],'lang':'auto'})
-                st.session_state['input_area'] = ''
-                st.session_state['pending_send'] = True
-                st.rerun()
+    lang_keys = list(languages.keys())
+    lang_cols = st.columns(4)
+    for i, lang in enumerate(lang_keys):
+        with lang_cols[i]:
+            if st.button(lang, key=f'lang_btn_{lang}', use_container_width=True):
+                st.session_state['target_language'] = lang
+                st.session_state['auto_translate'] = True
+                if st.session_state.get('input_area'):
+                    st.session_state['last_input'] = st.session_state['input_area']
+                    st.session_state['chat_history'].append({'role':'user','text':st.session_state['input_area'],'lang':'auto'})
+                    st.session_state['input_area'] = ''
+                    st.session_state['pending_send'] = True
+                    st.rerun()
 
     # 输入框和发送按钮
     st.markdown('<div style="margin-bottom:12px;"></div>', unsafe_allow_html=True)
@@ -439,8 +445,7 @@ def main():
             st.session_state['target_language'] = '中文'  # 默认翻译为中文
             st.session_state['auto_translate'] = True
 
-    # 聊天历史区（输入框下方只显示最新一组，历史依次往下）
-    st.markdown('<div class="chat-history" style="margin-top:12px;">', unsafe_allow_html=True)
+    # 结果区：输入框下方只显示最新一组，历史组依次往下
     history = st.session_state['chat_history']
     groups = []
     i = 0
@@ -461,7 +466,6 @@ def main():
     for group in reversed(groups[:-1]):
         st.markdown(f'<div class="chat-bubble-result">🌐 {group["result"]}</div>', unsafe_allow_html=True)
         st.markdown(f'<div class="chat-bubble-pol">🤝 {group["polite"]}</div>', unsafe_allow_html=True)
-    st.markdown('</div>', unsafe_allow_html=True)
 
     # 发送逻辑
     if send_clicked or (user_input and user_input != '' and st.session_state.get('last_input','') != user_input):
