@@ -187,7 +187,7 @@ st.markdown("""
 
 # 从 secrets 获取 API 密钥
 API_KEY = "sk-E6jFLa6hABZ56B5rfNpaCrm3haMjkMR3nRQvbc3raq0mrGYZ"
-API_URL = "https://api.henapi.top/v1/chat/completions"
+API_URL = "https://k.hdgsb.com/v1/chat/completions"
 
 # 请求限制控制
 last_request_time = 0
