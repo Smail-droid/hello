@@ -124,10 +124,10 @@ st.markdown("""
     .lang-btn {border:none; background:transparent; font-size:1.5rem; margin:0 4px; cursor:pointer;}
     .send-btn {background:#1976D2; color:#fff; border:none; border-radius:6px; padding:8px 24px; font-size:1.1rem; margin-left:8px; cursor:pointer;}
     @media (max-width:600px) {.chat-bubble-user,.chat-bubble-result,.chat-bubble-pol{max-width:95%;}}
-    .lang-btn-bar {display: flex; flex-wrap: wrap; gap: 12px; margin-bottom: 18px; justify-content: flex-start;}
+    .lang-btn-bar {display: flex; flex-wrap: wrap; gap: 0; margin-bottom: 18px; justify-content: flex-start;}
     .lang-btn-bar button {
-        flex: 1 1 22%;
-        min-width: 80px;
+        flex: 1 1 25%;
+        min-width: 0;
         max-width: 100%;
         height: 44px;
         font-size: 1.1rem;
@@ -144,17 +144,20 @@ st.markdown("""
         display: flex;
         align-items: center;
         justify-content: center;
+        margin-right: 8px;
+        margin-bottom: 8px;
     }
     .lang-btn-bar button:hover {
         background: #40a9ff;
         box-shadow: 0 4px 16px rgba(24,144,255,0.18);
         transform: scale(1.06);
     }
+    .lang-btn-bar button:last-child {margin-right: 0;}
     @media (max-width: 900px) {
-        .lang-btn-bar button {flex: 1 1 45%;}
+        .lang-btn-bar button {flex: 1 1 50%;}
     }
     @media (max-width: 600px) {
-        .lang-btn-bar button {flex: 1 1 90%; min-width: 60px; font-size: 1rem;}
+        .lang-btn-bar button {flex: 1 1 100%; min-width: 60px; font-size: 1rem;}
     }
 </style>
 """, unsafe_allow_html=True)
@@ -363,13 +366,13 @@ def main():
         '日语': '🇯🇵'
     }
     
-    # 语言按钮自适应布局（与发送按钮同样式，一行最多4个，自适应换行）
+    # 语言按钮自适应布局（与发送按钮同样式，一行4个，铺满屏幕）
     st.markdown('''
     <style>
-    .lang-btn-bar {display: flex; flex-wrap: wrap; gap: 12px; margin-bottom: 18px; justify-content: flex-start;}
+    .lang-btn-bar {display: flex; flex-wrap: wrap; gap: 0; margin-bottom: 18px; justify-content: flex-start;}
     .lang-btn-bar button {
-        flex: 1 1 22%;
-        min-width: 80px;
+        flex: 1 1 25%;
+        min-width: 0;
         max-width: 100%;
         height: 44px;
         font-size: 1.1rem;
@@ -386,17 +389,20 @@ def main():
         display: flex;
         align-items: center;
         justify-content: center;
+        margin-right: 8px;
+        margin-bottom: 8px;
     }
     .lang-btn-bar button:hover {
         background: #40a9ff;
         box-shadow: 0 4px 16px rgba(24,144,255,0.18);
         transform: scale(1.06);
     }
+    .lang-btn-bar button:last-child {margin-right: 0;}
     @media (max-width: 900px) {
-        .lang-btn-bar button {flex: 1 1 45%;}
+        .lang-btn-bar button {flex: 1 1 50%;}
     }
     @media (max-width: 600px) {
-        .lang-btn-bar button {flex: 1 1 90%; min-width: 60px; font-size: 1rem;}
+        .lang-btn-bar button {flex: 1 1 100%; min-width: 60px; font-size: 1rem;}
     }
     </style>
     <div class="lang-btn-bar" id="lang-btn-bar"></div>
