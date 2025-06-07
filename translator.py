@@ -186,8 +186,8 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 # 从 secrets 获取 API 密钥
-API_KEY = "sk-GR6XoKKYfrsfhBvKDj2FFELSgsRJ65IMdsDMLDODyt43ibtR"
-API_URL = "https://api.chatanywhere.tech/v1/chat/completions"
+API_KEY = "sk-E6jFLa6hABZ56B5rfNpaCrm3haMjkMR3nRQvbc3raq0mrGYZ"
+API_URL = "https://api.henapi.top/v1/chat/completions"
 
 # 请求限制控制
 last_request_time = 0
@@ -276,7 +276,7 @@ def translate_text(text, target_language):
             "Authorization": f"Bearer {API_KEY}"
         }
         data = {
-            "model": "gpt-3.5-turbo",
+            "model": "deepseek-chat",
             "messages": [
                 {"role": "system", "content": f"You are a professional translator. Translate the following text to {target_language}. Maintain the original formatting and meaning."},
                 {"role": "user", "content": text}
@@ -316,7 +316,7 @@ def generate_polite_response(text):
             "Authorization": f"Bearer {API_KEY}"
         }
         data = {
-            "model": "gpt-3.5-turbo",
+            "model": "deepseek-chat",
             "messages": [
                 {"role": "system", "content": "你是一个擅长增进感情和建立良好关系的助手。请根据用户输入的内容，生成一个简短但温暖的回复。回复要求：1. 控制在30字以内 2. 表达真诚的关心和理解 3. 使用温暖友善的语气 4. 不要使用任何表情符号 5. 不要出现'加油'、'祝你好运'等鼓励性口号，只表达理解、关心和支持。6. 保持自然，避免过于做作。7. 重点突出：表达理解和认同，给予真诚的赞美，表达关心和在意。请记住，简短但温暖的回复往往更有力量。"},
                 {"role": "user", "content": text}
