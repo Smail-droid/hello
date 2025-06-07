@@ -319,27 +319,50 @@ def main():
         st.session_state['last_input'] = ''
     if 'pending_send' not in st.session_state:
         st.session_state['pending_send'] = False
+    if 'auto_translate' not in st.session_state:
+        st.session_state['auto_translate'] = False
 
     # 顶部输入区和按钮区
     st.markdown('<div style="margin-bottom:24px;"></div>', unsafe_allow_html=True)
-    col1, col2, col3, col4, col5 = st.columns([6,2,2,2,4])
-    with col1:
-        user_input = st.text_input("", value=st.session_state.get('input_area', ''), placeholder="请输入内容并回车或点击发送...", key='input_area_text', label_visibility='collapsed')
-    with col2:
-        lang_en = st.button('英语 🇬🇧', key='lang_en', help='翻译为英语', use_container_width=True)
-    with col3:
-        lang_fa = st.button('波斯语 🇮🇷', key='lang_fa', help='翻译为波斯语', use_container_width=True)
-    with col4:
+    
+    # 输入框
+    user_input = st.text_input("", value=st.session_state.get('input_area', ''), 
+                             placeholder="请输入内容并回车或点击发送...", 
+                             key='input_area_text', 
+                             label_visibility='collapsed')
+    
+    # 按钮区
+    col1, col2, col3, col4, col5, col6, col7 = st.columns([2,2,2,2,2,2,4])
+    
+    # 语言按钮
+    languages = {
+        '中文': '🇨🇳',
+        '英语': '🇬🇧',
+        '波斯语': '🇮🇷',
+        '日语': '🇯🇵',
+        '韩语': '🇰🇷',
+        '法语': '🇫🇷'
+    }
+    
+    # 创建语言按钮
+    for i, (lang, flag) in enumerate(languages.items()):
+        with locals()[f'col{i+1}']:
+            if st.button(f'{flag} {lang}', key=f'lang_{lang}', use_container_width=True):
+                st.session_state['target_language'] = lang
+                st.session_state['auto_translate'] = True
+                if user_input:
+                    st.session_state['last_input'] = user_input
+                    st.session_state['chat_history'].append({'role':'user','text':user_input,'lang':'auto'})
+                    st.session_state['input_area'] = ''
+                    st.session_state['pending_send'] = True
+                    st.experimental_rerun()
+    
+    # 发送按钮
+    with col7:
         send_clicked = st.button('发送', key='send_btn', use_container_width=True)
-    with col5:
-        language_options = ['中文', '英语', '波斯语']
-        st.session_state['target_language'] = st.selectbox('目标语言', language_options, index=language_options.index(st.session_state.get('target_language', '中文')))
-
-    # 语言按钮逻辑
-    if lang_en:
-        st.session_state['target_language'] = '英语'
-    if lang_fa:
-        st.session_state['target_language'] = '波斯语'
+        if send_clicked:
+            st.session_state['target_language'] = '中文'  # 默认翻译为中文
+            st.session_state['auto_translate'] = True
 
     # 发送逻辑
     if send_clicked or (user_input and user_input != '' and st.session_state.get('last_input','') != user_input):
@@ -364,6 +387,7 @@ def main():
             st.session_state['chat_history'][-3]['handled'] = True
             st.session_state['loading_message'] = ''
             st.session_state['pending_send'] = False
+            st.session_state['auto_translate'] = False
             st.experimental_rerun()
 
     # 聊天历史区
