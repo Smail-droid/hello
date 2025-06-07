@@ -423,16 +423,11 @@ def main():
         with lang_cols[i]:
             if st.button(lang, key=f'lang_btn_{lang}', use_container_width=True):
                 st.session_state['target_language'] = lang
-                # 直接读取输入框内容（user_input），不依赖input_area
-                if 'user_input_cache' in st.session_state:
-                    input_val = st.session_state['user_input_cache']
-                else:
-                    input_val = ''
+                input_val = st.session_state.get('input_area', '')
                 if input_val:
                     st.session_state['last_input'] = input_val
                     st.session_state['chat_history'].append({'role':'user','text':input_val,'lang':'auto'})
                     st.session_state['pending_send'] = True
-                st.session_state['lang_btn_clicked'] = True
                 st.rerun()
 
     # 输入框和发送按钮
@@ -441,14 +436,18 @@ def main():
     with col1:
         user_input = st.text_input("", value=st.session_state.get('input_area', ''), 
                                  placeholder="请输入内容并回车或点击发送...", 
-                                 key='input_area_text', 
+                                 key='input_area', 
                                  label_visibility='collapsed')
-        st.session_state['user_input_cache'] = user_input
+        st.session_state['input_area'] = user_input
     with col2:
         send_clicked = st.button('发送', key='send_btn', use_container_width=True)
         if send_clicked:
             st.session_state['target_language'] = '中文'  # 默认翻译为中文
-            st.session_state['auto_translate'] = True
+            if user_input:
+                st.session_state['last_input'] = user_input
+                st.session_state['chat_history'].append({'role':'user','text':user_input,'lang':'auto'})
+                st.session_state['pending_send'] = True
+            st.rerun()
 
     # 结果区：输入框下方只显示最新一组，历史组依次往下
     history = st.session_state['chat_history']
@@ -472,13 +471,6 @@ def main():
         st.markdown(f'<div class="chat-bubble-result">🌐 {group["result"]}</div>', unsafe_allow_html=True)
         st.markdown(f'<div class="chat-bubble-pol">🤝 {group["polite"]}</div>', unsafe_allow_html=True)
 
-    # 发送逻辑
-    if send_clicked or (user_input and user_input != '' and st.session_state.get('last_input','') != user_input):
-        st.session_state['last_input'] = user_input
-        st.session_state['chat_history'].append({'role':'user','text':user_input,'lang':'auto'})
-        st.session_state['pending_send'] = True
-        st.rerun()
-
     # 自动处理最新一条未翻译的用户消息
     chat_history = st.session_state.get('chat_history', [])
     if st.session_state.get('pending_send', False):
@@ -499,7 +491,6 @@ def main():
                         st.session_state['pending_send'] = False
                         st.session_state['auto_translate'] = False
                         st.session_state['input_area'] = ''  # 翻译成功后清空输入框
-                        st.session_state['user_input_cache'] = ''
                         st.rerun()
             except Exception as e:
                 st.error(f"翻译过程中出现错误: {str(e)}")
