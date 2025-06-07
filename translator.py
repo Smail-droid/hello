@@ -347,21 +347,30 @@ def main():
                     st.session_state['pending_send'] = True
                     st.rerun()
 
-    # 输入框
+    # 输入框和发送按钮
     st.markdown('<div style="margin-bottom:12px;"></div>', unsafe_allow_html=True)
-    user_input = st.text_input("", value=st.session_state.get('input_area', ''), 
-                             placeholder="请输入内容并回车或点击发送...", 
-                             key='input_area_text', 
-                             label_visibility='collapsed')
-    
-    # 发送按钮
-    st.markdown('<div style="margin-top:12px;"></div>', unsafe_allow_html=True)
-    col1, col2, col3 = st.columns([3,2,3])
+    col1, col2 = st.columns([5,1])
+    with col1:
+        user_input = st.text_input("", value=st.session_state.get('input_area', ''), 
+                                 placeholder="请输入内容并回车或点击发送...", 
+                                 key='input_area_text', 
+                                 label_visibility='collapsed')
     with col2:
         send_clicked = st.button('发送', key='send_btn', use_container_width=True)
         if send_clicked:
             st.session_state['target_language'] = '中文'  # 默认翻译为中文
             st.session_state['auto_translate'] = True
+
+    # 聊天历史区
+    st.markdown('<div class="chat-history" style="margin-top:12px;">', unsafe_allow_html=True)
+    for msg in st.session_state['chat_history']:
+        if msg['role'] == 'user':
+            st.markdown(f'<div class="chat-bubble-user">🧑‍💻 {msg["text"]}</div>', unsafe_allow_html=True)
+        elif msg['role'] == 'result':
+            st.markdown(f'<div class="chat-bubble-result">🌐 {msg["text"]}</div>', unsafe_allow_html=True)
+        elif msg['role'] == 'polite':
+            st.markdown(f'<div class="chat-bubble-pol">🤝 {msg["text"]}</div>', unsafe_allow_html=True)
+    st.markdown('</div>', unsafe_allow_html=True)
 
     # 发送逻辑
     if send_clicked or (user_input and user_input != '' and st.session_state.get('last_input','') != user_input):
@@ -395,17 +404,6 @@ def main():
                 st.error(f"翻译过程中出现错误: {str(e)}")
                 st.session_state['pending_send'] = False
                 st.session_state['loading_message'] = ''
-
-    # 聊天历史区
-    st.markdown('<div class="chat-history">', unsafe_allow_html=True)
-    for msg in st.session_state['chat_history']:
-        if msg['role'] == 'user':
-            st.markdown(f'<div class="chat-bubble-user">🧑‍💻 {msg["text"]}</div>', unsafe_allow_html=True)
-        elif msg['role'] == 'result':
-            st.markdown(f'<div class="chat-bubble-result">🌐 {msg["text"]}</div>', unsafe_allow_html=True)
-        elif msg['role'] == 'polite':
-            st.markdown(f'<div class="chat-bubble-pol">🤝 {msg["text"]}</div>', unsafe_allow_html=True)
-    st.markdown('</div>', unsafe_allow_html=True)
 
 if __name__ == "__main__":
     main() 
