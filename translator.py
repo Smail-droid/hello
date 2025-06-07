@@ -423,13 +423,14 @@ def main():
         with lang_cols[i]:
             if st.button(lang, key=f'lang_btn_{lang}', use_container_width=True):
                 st.session_state['target_language'] = lang
-                st.session_state['auto_translate'] = True
-                if st.session_state.get('input_area'):
-                    st.session_state['last_input'] = st.session_state['input_area']
-                    st.session_state['chat_history'].append({'role':'user','text':st.session_state['input_area'],'lang':'auto'})
+                # 只要有输入内容，每次点击都追加user消息并触发翻译
+                input_val = st.session_state.get('input_area', '')
+                if input_val:
+                    st.session_state['last_input'] = input_val
+                    st.session_state['chat_history'].append({'role':'user','text':input_val,'lang':'auto'})
                     st.session_state['input_area'] = ''
                     st.session_state['pending_send'] = True
-                    st.rerun()
+                st.rerun()
 
     # 输入框和发送按钮
     st.markdown('<div style="margin-bottom:12px;"></div>', unsafe_allow_html=True)
