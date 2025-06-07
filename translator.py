@@ -361,16 +361,25 @@ def main():
             st.session_state['target_language'] = '中文'  # 默认翻译为中文
             st.session_state['auto_translate'] = True
 
-    # 聊天历史区
+    # 聊天历史区（最新一组在输入框下方，历史依次往下）
     st.markdown('<div class="chat-history" style="margin-top:12px;">', unsafe_allow_html=True)
-    # 倒序显示聊天历史
-    for msg in reversed(st.session_state['chat_history']):
-        if msg['role'] == 'user':
-            st.markdown(f'<div class="chat-bubble-user">🧑‍💻 {msg["text"]}</div>', unsafe_allow_html=True)
-        elif msg['role'] == 'result':
-            st.markdown(f'<div class="chat-bubble-result">🌐 {msg["text"]}</div>', unsafe_allow_html=True)
-        elif msg['role'] == 'polite':
-            st.markdown(f'<div class="chat-bubble-pol">🤝 {msg["text"]}</div>', unsafe_allow_html=True)
+    # 只显示 result+polite 组，不显示 user
+    # 先分组
+    history = st.session_state['chat_history']
+    groups = []
+    i = 0
+    while i < len(history):
+        if history[i]['role'] == 'result':
+            group = {'result': history[i]['text'], 'polite': ''}
+            if i+1 < len(history) and history[i+1]['role'] == 'polite':
+                group['polite'] = history[i+1]['text']
+                i += 1
+            groups.append(group)
+        i += 1
+    # 倒序显示，最新一组在最上
+    for group in reversed(groups):
+        st.markdown(f'<div class="chat-bubble-result">🌐 {group["result"]}</div>', unsafe_allow_html=True)
+        st.markdown(f'<div class="chat-bubble-pol">🤝 {group["polite"]}</div>', unsafe_allow_html=True)
     st.markdown('</div>', unsafe_allow_html=True)
 
     # 发送逻辑
